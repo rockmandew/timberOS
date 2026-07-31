@@ -44,6 +44,16 @@
         { "belowOrAt": 5000, "severity": "warning", "message": "Water reserves entered rationing range" },
         { "belowOrAt": 2500, "severity": "critical", "message": "Water reserves at emergency level" }
       ]
+    },
+    {
+      "id": "FOOD.TOTAL",
+      "label": "Colony Food Store",
+      "unit": "",
+      "fullScale": 10000,
+      "alarms": [
+        { "belowOrAt": 2500, "severity": "warning", "message": "Food reserves entered rationing range" },
+        { "belowOrAt": 1000, "severity": "critical", "message": "Food reserves at starvation level" }
+      ]
     }
   ],
   "gates": [
@@ -97,6 +107,28 @@
       "influences": [
         { "because": "a drought is active", "signal": "WEATHER.DROUGHT.ACTIVE", "signalState": true },
         { "because": "the upper reservoir is low", "sensor": "RES.UPPER.DEPTH", "sensorBand": "low" }
+      ]
+    }
+  ],
+  "provisions": [
+    {
+      "$comment": "Production/consumption balance is read from the stock band's trend; advisories are ranked, first match wins.",
+      "sensor": "FOOD.TOTAL",
+      "label": "Food",
+      "kind": "food",
+      "advisories": [
+        { "balance": "deficit", "belowOrAt": 2500, "severity": "critical", "message": "Food is being eaten faster than it's grown and reserves are low", "action": "Reassign beavers to farming/gathering now and enable rationing." },
+        { "balance": "deficit", "severity": "warning", "message": "Food is being consumed faster than produced", "action": "Add a farm or gatherer, or plant faster-growing crops, before reserves fall." },
+        { "balance": "surplus", "aboveOrAt": 7500, "severity": "info", "message": "Food surplus is high and still climbing", "action": "Consider reallocating some farmers to construction or forestry." }
+      ]
+    },
+    {
+      "sensor": "WATER.TOTAL",
+      "label": "Water",
+      "kind": "water",
+      "advisories": [
+        { "balance": "deficit", "belowOrAt": 2500, "severity": "critical", "message": "Water is draining faster than it's pumped and reserves are low", "action": "Open an intake or reduce irrigation draw until reserves recover." },
+        { "balance": "deficit", "severity": "warning", "message": "Water reserves are trending down", "action": "Check pump coverage and trim discretionary outflow." }
       ]
     }
   ],

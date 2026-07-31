@@ -86,13 +86,36 @@ to build and demo the entire supervisory loop offline.
 ```
 gateway/     Node + TypeScript gateway (the brain)
   src/timberborn/   API client + offline simulator
-  src/telemetry/    band derivation, trends, alarms
+  src/telemetry/    band derivation, trends, alarms, provisions (food/water balance)
   src/rules/        safety interlocks
   src/integrations/ annunciator interface + console / Hue / PC-audio outputs
 dashboard/   React + Vite + Zustand supervisory UI
 config/      example config + naming-driven mappings
 docs/        NAMING.md (the contract) + ROADMAP.md (recommendations & phases)
 ```
+
+## Provisions — food & water balance with suggested actions
+
+Beyond "how full is the store", the *Provisions* panel answers "am I gaining or
+losing ground, and what should I do?" For each configured colony stock (food and
+water ship by default) it shows:
+
+- **Balance** — surplus / balanced / deficit, read honestly from the stock
+  band's trend direction (rising means production is currently outpacing
+  consumption). No fabricated per-tick rate is ever shown.
+- **A net-balance chart** — a diverging bar chart of the change in the stored
+  band between recorded points: up/green when the store grew (net production),
+  down/amber when it shrank (net consumption). Direction and relative size only.
+- **A suggested action** — the single most relevant advisory (e.g. *"Food is
+  being eaten faster than it's grown → reassign beavers to farming and enable
+  rationing"*), chosen from ranked rules in config. Band-level guards use the
+  same guaranteed-bound rule as alarms, so TimberOS only advises on what the band
+  actually proves.
+
+Add any stock band sensor (named `FOOD.TOTAL.GT_*`, `WATER.TOTAL.GT_*`, …) plus a
+`provisions` entry in config — no per-stock UI code. The offline simulator grows
+and eats food on the weather cycle, so the whole panel is exercisable with
+`npm run gateway:sim`.
 
 ## Annunciators & integration toggles
 

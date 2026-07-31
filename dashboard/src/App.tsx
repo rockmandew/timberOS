@@ -9,6 +9,7 @@ import { EventLog } from './components/EventLog'
 import { GateControl } from './components/GateControl'
 import { IntegrationsPanel } from './components/IntegrationsPanel'
 import { ModeSelector } from './components/ModeSelector'
+import { ProvisionsPanel } from './components/ProvisionsPanel'
 import { TrendChart } from './components/TrendChart'
 import { useTimberOS } from './store'
 import type { Snapshot } from './types'
@@ -86,6 +87,13 @@ export function App() {
         <section className="panel">
           <h2>Integrations</h2>
           <IntegrationsPanel integrations={snapshot?.integrations ?? []} />
+        </section>
+
+        <section className="panel">
+          <h2>Provisions — Food &amp; Water Balance</h2>
+          <div className="panel-body">
+            <ProvisionsPanel provisions={snapshot?.provisions ?? []} trends={trends} />
+          </div>
         </section>
 
         <section className="panel">

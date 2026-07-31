@@ -7,9 +7,10 @@ import { checkInterlocks } from './rules/interlocks.js'
 import { evaluateAlarms } from './telemetry/alarms.js'
 import { buildBandSensor, TrendTracker, type ThresholdReading } from './telemetry/bands.js'
 import { deriveNetwork } from './telemetry/network.js'
+import { deriveProvisions } from './telemetry/provisions.js'
 import { deriveInsights } from './telemetry/relationships.js'
 import type { TimberbornApi } from './timberborn/client.js'
-import type { Alarm, BandSensor, GateState, IntegrationState, LintFinding, NetworkView, RawSignal, RelationshipInsight, SignalReading, Snapshot, TrendSeries } from './types.js'
+import type { Alarm, BandSensor, GateState, IntegrationState, LintFinding, NetworkView, ProvisionStatus, RawSignal, RelationshipInsight, SignalReading, Snapshot, TrendSeries } from './types.js'
 
 /**
  * The TimberOS engine: polls the game, debounces raw booleans, derives
@@ -331,6 +332,7 @@ export class Engine {
     const signals = new Map<string, boolean>()
     for (const [name, entry] of this.adapterStates) signals.set(name, entry.accepted)
     const insights: RelationshipInsight[] = deriveInsights(this.config.relationships ?? [], sensors, gates, signals)
+    const provisions: ProvisionStatus[] = deriveProvisions(this.config.provisions, sensors, this.mode)
     const network: NetworkView | null = deriveNetwork(this.config.network, gates, signals)
 
     const modeConfig = this.config.modes.find((m) => m.id === this.mode)
@@ -345,6 +347,7 @@ export class Engine {
       unmapped: unmapped.sort((a, b) => a.name.localeCompare(b.name)),
       lint: this.lint,
       insights,
+      provisions,
       network,
       integrations: this.getIntegrations(),
       updatedAt: now,
@@ -443,6 +446,7 @@ export class Engine {
       unmapped: [],
       lint: [],
       insights: [],
+      provisions: [],
       network: null,
       integrations: this.getIntegrations(),
       updatedAt: 0,

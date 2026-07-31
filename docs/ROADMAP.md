@@ -79,6 +79,18 @@ command and demand the confirm flag — which a voice macro simply won't send.
 High-risk controls are therefore un-reachable by voice without an explicit,
 separate confirm step. Good default; keep it.
 
+### 9. Provisions: show the *balance*, and suggest the action
+A stock gauge answers "how full is the food store"; the operator's real question
+is "am I gaining or losing ground, and what do I do about it". TimberOS adds a
+**provisions** panel that reads production-vs-consumption *balance* honestly from
+the stock band's trend direction (rising = producing faster than consuming — no
+fabricated per-tick rate), draws a small diverging chart of that net movement,
+and surfaces the single most relevant **suggested action** from ranked,
+config-driven advisories. Advisory band-level guards use the same
+guaranteed-bound rule as alarms, so we only ever advise on what the band proves.
+Food and water ship as the first two provisions; any stock band sensor can be
+added in config without new UI code.
+
 ## Build phases
 
 | Phase | Deliverable | Status |
@@ -90,6 +102,7 @@ separate confirm step. Good default; keep it.
 | **2** | Config linter; sensor↔gate relationship engine ("North Fields drying *because* …") | ✅ v0.2 |
 | **2** | Contamination network view (nodes + isolated-route animation) | ✅ v0.2 |
 | **2** | Trend charts from the event store (SVG, no false precision) | ✅ v0.2 |
+| **2** | Provision balance (food/water production vs consumption) + action advisories | ✅ v0.3 |
 | **3** | Hue annunciator (whole-group status color; per-role split later) | ✅ v0.3 |
 | **3** | Per-integration dashboard toggles (live enable/disable, no restart) | ✅ v0.3 |
 | **3** | PC audio hydraulic-event cues (low latency, local; Web Audio in the dashboard) | ✅ v0.3 |

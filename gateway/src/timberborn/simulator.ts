@@ -8,8 +8,11 @@ import type { TimberbornApi } from './client.js'
  *
  * It models one water system: the upper reservoir drains through the
  * spillway and irrigation gates, irrigation feeds soil moisture, and total
- * water stock tracks the reservoir. Gate commands are acknowledged on
- * STATE.* adapters after a short delay, like the in-game wiring would.
+ * water stock tracks the reservoir. Food is grown and eaten: crop output
+ * follows soil moisture and stalls in drought, while consumption is steady, so
+ * the food store swings between surplus and deficit — enough to exercise the
+ * provision balance + advisories. Gate commands are acknowledged on STATE.*
+ * adapters after a short delay, like the in-game wiring would.
  */
 
 const TICK_MS = 1000
@@ -29,6 +32,7 @@ export class SimulatedTimberborn implements TimberbornApi {
   private depth = 2.7 // upper reservoir, meters
   private soil = 0.9 // 0..1 moisture in the north fields
   private water = 9200 // colony water stock
+  private food = 6800 // colony food store
   private raining = true
   private levers = new Map<string, boolean>()
 
@@ -78,6 +82,14 @@ export class SimulatedTimberborn implements TimberbornApi {
 
     this.soil = clamp(this.soil + (irrigation > 0 ? 0.01 : -0.008), 0, 1)
     this.water = clamp(this.water + (this.raining ? 25 : -35), 0, 12000)
+
+    // Food: crops grow with soil moisture but wilt in drought; the colony eats
+    // at a steady rate. Net swings the store between surplus (wet) and deficit
+    // (drought), exercising the provision balance + advisories.
+    const cropHealth = this.raining ? 1 : 0.4
+    const production = (this.soil > 0.35 ? 34 + this.soil * 20 : 8) * cropHealth
+    const consumption = 38
+    this.food = clamp(this.food + production - consumption, 0, 12000)
   }
 
   private ackPosition(id: string): number {
@@ -96,6 +108,9 @@ export class SimulatedTimberborn implements TimberbornApi {
     }
     for (const t of [1000, 2500, 5000, 7500, 10000]) {
       out.push({ name: `WATER.TOTAL.GT_${t}`, state: this.water > t })
+    }
+    for (const t of [1000, 2500, 5000, 7500, 10000]) {
+      out.push({ name: `FOOD.TOTAL.GT_${t}`, state: this.food > t })
     }
 
     for (const gate of this.gates) {

@@ -32,6 +32,12 @@ Keep it to **4–5 meaningful bands** per measurement, not twenty. The bands sho
 mean something operationally (Emergency / Rationing / Safe / Stable / Surplus),
 not mark arbitrary percentages.
 
+The same convention covers **colony stocks** — wire `FOOD.TOTAL.GT_*` and
+`WATER.TOTAL.GT_*` families to the food and water totals. Listing either under a
+`provisions` block in config (see `config/timberos.example.json`) turns it into a
+production-vs-consumption balance with a suggested action, on top of the band
+gauge — no extra naming needed.
+
 ### Gate acknowledgment — `STATE.FG.<SITE>.<NAME>.<position>`
 
 Optional but recommended: an adapter that reads back a gate's *actual* position,

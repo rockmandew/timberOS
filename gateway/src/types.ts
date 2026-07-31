@@ -127,6 +127,32 @@ export interface IntegrationState {
   detail: string
 }
 
+/** Net production-vs-consumption reading for a colony stock, from its band trend. */
+export type ProvisionBalance = 'surplus' | 'balanced' | 'deficit' | 'unknown'
+
+/**
+ * A provision's live status: its current band, whether it's net-produced or
+ * net-consumed right now, and the single most relevant suggested action.
+ */
+export interface ProvisionStatus {
+  sensorId: string
+  label: string
+  kind: 'food' | 'water' | 'other'
+  /** surplus = rising, deficit = falling, balanced = stable (from the band trend). */
+  balance: ProvisionBalance
+  trend: Trend
+  lo: number | null
+  hi: number | null
+  fraction: number | null
+  unit: string | null
+  /** Advisory severity, or null when nothing needs saying. */
+  severity: 'info' | 'warning' | 'critical' | null
+  /** What's happening (advisory headline), or null. */
+  message: string | null
+  /** The recommended operator action, or null. */
+  action: string | null
+}
+
 export type NodeKind = 'source' | 'reservoir' | 'junction' | 'field' | 'outlet' | 'colony'
 
 export interface NetworkNodeView {
@@ -186,6 +212,8 @@ export interface Snapshot {
   lint: LintFinding[]
   /** Causal diagnostics for sensors currently in an adverse state. */
   insights: RelationshipInsight[]
+  /** Production/consumption balance + suggested actions for colony stocks (food, water). */
+  provisions: ProvisionStatus[]
   /** Contamination/flow network, or null when no `network` block is configured. */
   network: NetworkView | null
   /** Ambient output integrations and their live on/off state (Hue, PC audio, …). */

@@ -89,6 +89,46 @@ export interface RelationshipInfluence {
 }
 
 /**
+ * A colony stock the settlement both produces and consumes — food, water — so
+ * TimberOS can frame it as a production/consumption *balance* and suggest an
+ * action. The underlying data is the stock's threshold-band sensor (e.g.
+ * FOOD.TOTAL.GT_*); the balance is read honestly from the band's trend
+ * direction (rising = producing faster than consuming), never a faked rate.
+ */
+export interface ProvisionConfig {
+  /** Stock band sensor id this provision tracks, e.g. "FOOD.TOTAL". */
+  sensor: string
+  label: string
+  /** Drives the panel icon; defaults to "other". */
+  kind?: 'food' | 'water' | 'other'
+  /** Ranked advisories; the first whose conditions hold is shown. */
+  advisories?: ProvisionAdvisoryConfig[]
+}
+
+/**
+ * One suggested action for a provision, gated on the balance state and,
+ * optionally, the band level and operating mode. Band gates use the same
+ * guaranteed-bound rule as alarms: `belowOrAt` matches only when the band's
+ * *ceiling* is at or below the value (we only advise on what we know), and
+ * `aboveOrAt` only when the band's *floor* is at or above it.
+ */
+export interface ProvisionAdvisoryConfig {
+  /** Balance state this advisory applies to. */
+  balance: 'surplus' | 'balanced' | 'deficit'
+  /** Only when the band ceiling ≤ this (a low/deficit guard). */
+  belowOrAt?: number
+  /** Only when the band floor ≥ this (a high/surplus guard). */
+  aboveOrAt?: number
+  severity: 'info' | 'warning' | 'critical'
+  /** What's happening, e.g. "Food is being eaten faster than it's grown". */
+  message: string
+  /** The recommended operator action, e.g. "Assign more farmers or plant faster crops". */
+  action: string
+  /** Restrict to specific operating modes (default: all). */
+  modes?: string[]
+}
+
+/**
  * Optional water-network topology for the contamination view. Node positions
  * are normalized 0..1 (the dashboard scales them into the SVG viewport).
  */
@@ -178,6 +218,8 @@ export interface TimberOSConfig {
   modes: ModeConfig[]
   /** Optional diagnostics rules (docs/ROADMAP.md Phase 2). */
   relationships?: RelationshipConfig[]
+  /** Optional production/consumption balance + action advisories for colony stocks. */
+  provisions?: ProvisionConfig[]
   /** Optional contamination/flow network topology. */
   network?: NetworkConfig
   /** Optional ambient output integrations (docs/ROADMAP.md Phase 3–4). */

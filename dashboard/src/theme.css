@@ -563,6 +563,92 @@ body {
 .lg-isolated { color: var(--ink-muted); }
 .lg-idle { color: var(--line); }
 
+/* ── Provisions (food & water balance) ── */
+
+.provisions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.provision {
+  border-left: 3px solid var(--ink-muted);
+  padding-left: 10px;
+}
+
+.provision.surplus { border-left-color: var(--good); }
+.provision.balanced { border-left-color: var(--water); }
+.provision.deficit { border-left-color: var(--warning); }
+
+.provision-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.provision-icon { flex: none; }
+.provision-name { color: var(--ink); }
+
+.provision-band {
+  margin-left: auto;
+  color: var(--ink-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.provision-balance {
+  font-size: 12px;
+  margin-top: 2px;
+  color: var(--ink-secondary);
+}
+
+.provision-balance.surplus { color: var(--good); }
+.provision-balance.balanced { color: var(--water); }
+.provision-balance.deficit { color: var(--warning); }
+.provision-balance.unknown { color: var(--ink-muted); }
+
+.provision-collecting {
+  color: var(--ink-muted);
+  font-size: 11px;
+  margin: 6px 0;
+}
+
+.netbalance-svg {
+  width: 100%;
+  height: 40px;
+  margin: 6px 0 2px;
+  background: #140f09;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  display: block;
+}
+
+.netbalance-axis { stroke: var(--line); stroke-width: 1; }
+.netbalance-bar.produced { fill: var(--good); }
+.netbalance-bar.consumed { fill: var(--warning); }
+
+.advisory {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+}
+
+.advisory.warning { border-color: var(--warning); }
+.advisory.critical { border-color: var(--critical); }
+
+.advisory-icon { flex: none; }
+.advisory.info .advisory-icon { color: var(--water); }
+.advisory.warning .advisory-icon { color: var(--warning); }
+.advisory.critical .advisory-icon { color: var(--critical); }
+
+.advisory-body { display: flex; flex-direction: column; gap: 2px; }
+.advisory-msg { color: var(--ink); }
+.advisory-action { color: var(--brass); font-size: 12px; }
+.advisory-arrow { color: var(--brass-dim); }
+
 /* ── Integrations & toggle switches ── */
 
 .integrations {

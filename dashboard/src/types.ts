@@ -62,6 +62,23 @@ export interface RelationshipInsight {
   causes: string[]
 }
 
+export type ProvisionBalance = 'surplus' | 'balanced' | 'deficit' | 'unknown'
+
+export interface ProvisionStatus {
+  sensorId: string
+  label: string
+  kind: 'food' | 'water' | 'other'
+  balance: ProvisionBalance
+  trend: Trend
+  lo: number | null
+  hi: number | null
+  fraction: number | null
+  unit: string | null
+  severity: 'info' | 'warning' | 'critical' | null
+  message: string | null
+  action: string | null
+}
+
 export type IntegrationKind = 'light' | 'audio' | 'voice' | 'chat' | 'console'
 
 export interface IntegrationState {
@@ -125,6 +142,7 @@ export interface Snapshot {
   unmapped: RawSignal[]
   lint: LintFinding[]
   insights: RelationshipInsight[]
+  provisions: ProvisionStatus[]
   network: NetworkView | null
   integrations: IntegrationState[]
   updatedAt: number
