@@ -75,5 +75,46 @@
     { "id": "badtide_isolation", "label": "Badtide Isolation", "description": "Clean-water intakes closed, diversion routes open." },
     { "id": "recovery", "label": "Reservoir Recovery", "description": "Controlled refill; irrigation limited until safe depth is restored." },
     { "id": "manual", "label": "Manual Engineering", "suspendAutomation": true, "description": "Automation suspended; every command logged; hold-to-confirm on high-risk controls." }
-  ]
+  ],
+  "relationships": [
+    {
+      "sensor": "SOIL.NORTH_FIELDS.MOISTURE",
+      "influences": [
+        { "because": "the irrigation gate is closed", "gate": "FG.UPPER.IRRIGATION", "gateState": "closed" },
+        { "because": "a drought is active", "signal": "WEATHER.DROUGHT.ACTIVE", "signalState": true },
+        { "because": "the upper reservoir is already low", "sensor": "RES.UPPER.DEPTH", "sensorBand": "low" }
+      ]
+    },
+    {
+      "sensor": "RES.UPPER.DEPTH",
+      "influences": [
+        { "because": "a drought has cut the inflow", "signal": "WEATHER.DROUGHT.ACTIVE", "signalState": true },
+        { "because": "the spillway is releasing water", "gate": "FG.UPPER.SPILLWAY", "gateState": "open" }
+      ]
+    },
+    {
+      "sensor": "WATER.TOTAL",
+      "influences": [
+        { "because": "a drought is active", "signal": "WEATHER.DROUGHT.ACTIVE", "signalState": true },
+        { "because": "the upper reservoir is low", "sensor": "RES.UPPER.DEPTH", "sensorBand": "low" }
+      ]
+    }
+  ],
+  "network": {
+    "nodes": [
+      { "id": "res-upper", "label": "Upper Reservoir", "kind": "reservoir", "x": 0.5, "y": 0.12 },
+      { "id": "junction-central", "label": "Central Junction", "kind": "junction", "x": 0.5, "y": 0.5 },
+      { "id": "field-north", "label": "North Fields", "kind": "field", "x": 0.86, "y": 0.32 },
+      { "id": "colony", "label": "Beaver District", "kind": "colony", "x": 0.5, "y": 0.9 },
+      { "id": "source-badwater", "label": "Badwater Source", "kind": "source", "x": 0.12, "y": 0.5, "contaminatedWhenSignal": "WEATHER.DROUGHT.ACTIVE" },
+      { "id": "outlet-diversion", "label": "Diversion Outlet", "kind": "outlet", "x": 0.12, "y": 0.9 }
+    ],
+    "edges": [
+      { "id": "e-spillway", "from": "res-upper", "to": "junction-central", "gate": "FG.UPPER.SPILLWAY", "label": "Spillway" },
+      { "id": "e-irrigation", "from": "res-upper", "to": "field-north", "gate": "FG.UPPER.IRRIGATION", "label": "Irrigation" },
+      { "id": "e-mains", "from": "junction-central", "to": "colony", "label": "Mains" },
+      { "id": "e-diversion", "from": "source-badwater", "to": "outlet-diversion", "gate": "FG.BADWATER.DIVERSION", "carriesContamination": true, "label": "Diversion" },
+      { "id": "e-contam-inlet", "from": "source-badwater", "to": "junction-central", "gate": "FG.CENTRAL.CONTAM_INLET", "carriesContamination": true, "label": "Contam Inlet" }
+    ]
+  }
 }

@@ -72,6 +72,83 @@ export interface RawSignal {
   kind: 'adapter' | 'lever'
 }
 
+export type LintSeverity = 'error' | 'warning' | 'info'
+
+/**
+ * A wiring/config mismatch found by the linter — a save-vs-config discrepancy
+ * turned into a dashboard warning instead of a silent wrong reading.
+ */
+export interface LintFinding {
+  severity: LintSeverity
+  /** Stable slug for the rule that produced this, e.g. "gate-no-ack". */
+  code: string
+  /** The signal/gate/interlock the finding is about. */
+  subject: string
+  message: string
+}
+
+/**
+ * A causal explanation for a sensor's adverse state — the relationship engine's
+ * output, e.g. "North Fields Moisture is drying · because the irrigation gate is
+ * closed while a drought is active".
+ */
+export interface RelationshipInsight {
+  sensorId: string
+  severity: 'info' | 'warning' | 'critical'
+  /** What is happening, e.g. "North Fields Moisture is drying". */
+  headline: string
+  /** Why, as a single clause joining the active causes. */
+  because: string
+  /** Signal/gate ids that contributed, for cross-highlighting. */
+  causes: string[]
+}
+
+export type NodeKind = 'source' | 'reservoir' | 'junction' | 'field' | 'outlet' | 'colony'
+
+export interface NetworkNodeView {
+  id: string
+  label: string
+  kind: NodeKind
+  x: number
+  y: number
+  contaminated: boolean
+}
+
+export interface NetworkEdgeView {
+  id: string
+  from: string
+  to: string
+  /** Gate that governs this edge, if any. */
+  gate: string | null
+  /** Clean water is currently moving along this edge. */
+  flowing: boolean
+  /** This edge is carrying (or would carry) contaminated water. */
+  contaminated: boolean
+  /** Route deliberately cut by a closed gate to protect downstream nodes. */
+  isolated: boolean
+  label: string | null
+}
+
+export interface NetworkView {
+  nodes: NetworkNodeView[]
+  edges: NetworkEdgeView[]
+}
+
+/** One stepped band sample for trend charts (honest range, never a point value). */
+export interface TrendSample {
+  ts: number
+  lo: number | null
+  hi: number | null
+  fraction: number | null
+}
+
+export interface TrendSeries {
+  sensorId: string
+  label: string
+  unit: string | null
+  samples: TrendSample[]
+}
+
 export interface Snapshot {
   connected: boolean
   simulated: boolean
@@ -81,6 +158,12 @@ export interface Snapshot {
   gates: GateState[]
   alarms: Alarm[]
   unmapped: RawSignal[]
+  /** Config-vs-save wiring findings (recomputed when the discovered signal set changes). */
+  lint: LintFinding[]
+  /** Causal diagnostics for sensors currently in an adverse state. */
+  insights: RelationshipInsight[]
+  /** Contamination/flow network, or null when no `network` block is configured. */
+  network: NetworkView | null
   updatedAt: number
 }
 

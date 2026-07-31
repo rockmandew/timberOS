@@ -79,8 +79,8 @@ body {
 .grid {
   flex: 1;
   display: grid;
-  grid-template-columns: 1.1fr 1.3fr 1fr;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: auto;
   gap: 12px;
   padding: 12px 18px 18px;
   align-items: start;
@@ -429,4 +429,179 @@ body {
 
 .unmapped code {
   color: var(--ink-secondary);
+}
+
+/* ── Config health (linter) ── */
+
+.lint-summary {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.lint-list {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.lint-item {
+  display: flex;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px dashed var(--line);
+  border-left: 3px solid var(--ink-muted);
+}
+
+.lint-item:last-child { border-bottom: none; }
+.lint-item.error { border-left-color: var(--critical); }
+.lint-item.warning { border-left-color: var(--warning); }
+.lint-item.info { border-left-color: var(--water); }
+
+.lint-icon { flex: none; }
+.lint-item.error .lint-icon { color: var(--critical); }
+.lint-item.warning .lint-icon { color: var(--warning); }
+.lint-item.info .lint-icon { color: var(--water); }
+
+.lint-body { display: flex; flex-direction: column; gap: 1px; }
+.lint-subject { color: var(--ink-secondary); font-size: 11px; }
+.lint-msg { color: var(--ink); font-size: 12px; }
+
+/* ── Diagnostics (relationship insights) ── */
+
+.insight {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px dashed var(--line);
+  border-left: 3px solid var(--water);
+}
+
+.insight:last-child { border-bottom: none; }
+.insight.warning { border-left-color: var(--warning); }
+.insight.critical { border-left-color: var(--critical); }
+
+.insight-icon { flex: none; }
+.insight.critical .insight-icon { color: var(--critical); }
+.insight.warning .insight-icon { color: var(--warning); }
+.insight.info .insight-icon { color: var(--water); }
+
+.insight-headline { color: var(--ink); }
+.insight-because { color: var(--ink-secondary); }
+
+/* ── Contamination network map ── */
+
+.netmap { display: flex; flex-direction: column; gap: 8px; }
+
+.netmap-svg {
+  width: 100%;
+  height: auto;
+  background: #120d08;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.node { fill: var(--panel-raised); stroke: var(--brass-dim); stroke-width: 1.5; }
+.node.reservoir { stroke: var(--water); }
+.node.source { stroke: var(--contaminated); }
+.node.junction { stroke: var(--brass); }
+.node.field { stroke: var(--good); }
+.node.outlet { stroke: var(--ink-muted); }
+.node.colony { stroke: var(--brass); }
+.node.contaminated { fill: #3a2140; stroke: var(--contaminated); }
+
+.node-contam-ring {
+  fill: none;
+  stroke: var(--contaminated);
+  stroke-width: 2;
+  opacity: 0.75;
+  animation: pulse 1.2s infinite;
+}
+
+.node-glyph {
+  fill: var(--ink);
+  font-size: 13px;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.node-label {
+  fill: var(--ink-secondary);
+  font-size: 10px;
+  text-anchor: middle;
+}
+
+.edge { stroke: var(--ink-muted); stroke-width: 2.5; fill: none; }
+.edge.idle { stroke: var(--line); stroke-width: 2; }
+.edge.flowing { stroke: var(--water); stroke-dasharray: 6 5; animation: flow 1s linear infinite; }
+.edge.contaminated { stroke: var(--contaminated); stroke-dasharray: 6 5; animation: flow 0.8s linear infinite; }
+.edge.isolated { stroke: var(--ink-muted); stroke-dasharray: 2 4; opacity: 0.6; }
+.edge-cut { stroke: var(--critical); stroke-width: 2.5; }
+
+.edge-label { fill: var(--ink-muted); font-size: 9px; text-anchor: middle; }
+.edge-label.contaminated { fill: var(--contaminated); }
+.edge-label.flowing { fill: var(--water); }
+
+.arrow-clean { fill: var(--water); }
+.arrow-bad { fill: var(--contaminated); }
+
+@keyframes flow { to { stroke-dashoffset: -22; } }
+
+.netmap-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  padding: 0 2px;
+}
+
+.lg { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-muted); }
+.lg::before { content: ''; width: 14px; height: 3px; border-radius: 2px; background: currentColor; }
+.lg-flowing { color: var(--water); }
+.lg-contaminated { color: var(--contaminated); }
+.lg-isolated { color: var(--ink-muted); }
+.lg-idle { color: var(--line); }
+
+/* ── Sensor trend ribbons ── */
+
+.trends {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.trendchart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.trendchart-head .sensor-name { color: var(--ink); }
+.trendchart-head .sensor-band { color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
+.trendchart-collecting { color: var(--ink-muted); font-size: 11px; }
+
+.trendchart-svg {
+  width: 100%;
+  height: 56px;
+  margin-top: 4px;
+  background: #140f09;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  display: block;
+}
+
+.ribbon { fill: var(--water); fill-opacity: 0.3; stroke: var(--water); stroke-width: 1; stroke-opacity: 0.85; }
+.ribbon.low { fill: var(--warning); stroke: var(--warning); }
+.ribbon.crit { fill: var(--critical); stroke: var(--critical); }
+
+.trendchart-axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-muted);
+  font-size: 10px;
+  margin-top: 2px;
 }

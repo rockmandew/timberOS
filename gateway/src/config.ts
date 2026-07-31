@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import type { NodeKind } from './types.js'
 
 /**
  * TimberOS configuration. The naming convention (docs/NAMING.md) drives
@@ -62,6 +63,61 @@ export interface ModeConfig {
   description?: string
 }
 
+/**
+ * Relationship rules for the diagnostics engine: when `sensor` is in an adverse
+ * state (falling trend or in an alarm band), each influence whose condition
+ * currently holds contributes its `because` clause to the explanation.
+ */
+export interface RelationshipConfig {
+  /** Sensor id this rule explains, e.g. "SOIL.NORTH_FIELDS.MOISTURE". */
+  sensor: string
+  influences: RelationshipInfluence[]
+}
+
+export interface RelationshipInfluence {
+  /** Human clause, e.g. "the irrigation gate is closed". */
+  because: string
+  /** A gate whose confirmed state must match `gateState`. */
+  gate?: string
+  gateState?: 'open' | 'closed'
+  /** A raw adapter signal (e.g. "WEATHER.DROUGHT.ACTIVE") whose state must match. */
+  signal?: string
+  signalState?: boolean
+  /** Another band sensor that must itself be low/high. */
+  sensor?: string
+  sensorBand?: 'low' | 'high'
+}
+
+/**
+ * Optional water-network topology for the contamination view. Node positions
+ * are normalized 0..1 (the dashboard scales them into the SVG viewport).
+ */
+export interface NetworkConfig {
+  nodes: NetworkNodeConfig[]
+  edges: NetworkEdgeConfig[]
+}
+
+export interface NetworkNodeConfig {
+  id: string
+  label: string
+  kind: NodeKind
+  x: number
+  y: number
+  /** Node is contaminated while this adapter signal is ON. */
+  contaminatedWhenSignal?: string
+}
+
+export interface NetworkEdgeConfig {
+  id: string
+  from: string
+  to: string
+  /** Gate governing flow along this edge (edge flows only when the gate is open). */
+  gate?: string
+  /** This edge carries badwater when flowing (routes contamination downstream). */
+  carriesContamination?: boolean
+  label?: string
+}
+
 export interface EndpointsConfig {
   /** Base URL of the Timberborn HTTP API. */
   baseUrl: string
@@ -92,6 +148,10 @@ export interface TimberOSConfig {
   gates: GateConfig[]
   interlocks: InterlockConfig[]
   modes: ModeConfig[]
+  /** Optional diagnostics rules (docs/ROADMAP.md Phase 2). */
+  relationships?: RelationshipConfig[]
+  /** Optional contamination/flow network topology. */
+  network?: NetworkConfig
 }
 
 const HERE = dirname(fileURLToPath(import.meta.url))

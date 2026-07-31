@@ -96,9 +96,11 @@ docs/        NAMING.md (the contract) + ROADMAP.md (recommendations & phases)
 
 ## Status
 
-v0.1 — Phase 1 complete: full local supervisory loop (discovery → bands → gates →
-interlocks → alarms → events) working against the simulator, with a control-room
-dashboard whose status palette is validated for color-blindness and contrast.
-Hardware annunciators, the relationship engine, and the contamination network view
+v0.2 — Phases 1 & 2 complete: the full local supervisory loop (discovery → bands →
+gates → interlocks → alarms → events) plus the config linter, the sensor↔gate
+relationship engine ("…drying *because* the irrigation gate is closed"), the
+contamination network view, and event-store trend ribbons — all working against
+the simulator, with a control-room dashboard whose status palette is validated
+for color-blindness and contrast. Hardware annunciators (Hue / Govee / PC audio)
 are next. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the phased plan and the
 design recommendations behind it.

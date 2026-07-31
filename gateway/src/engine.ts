@@ -1,12 +1,15 @@
 import type { TimberOSConfig } from './config.js'
 import { EventStore } from './events.js'
 import type { Annunciator } from './integrations/annunciator.js'
+import { lintConfig } from './lint.js'
 import { gateSignalName, parseName } from './naming.js'
 import { checkInterlocks } from './rules/interlocks.js'
 import { evaluateAlarms } from './telemetry/alarms.js'
 import { buildBandSensor, TrendTracker, type ThresholdReading } from './telemetry/bands.js'
+import { deriveNetwork } from './telemetry/network.js'
+import { deriveInsights } from './telemetry/relationships.js'
 import type { TimberbornApi } from './timberborn/client.js'
-import type { Alarm, BandSensor, GateState, RawSignal, Snapshot } from './types.js'
+import type { Alarm, BandSensor, GateState, LintFinding, NetworkView, RawSignal, RelationshipInsight, SignalReading, Snapshot, TrendSeries } from './types.js'
 
 /**
  * The TimberOS engine: polls the game, debounces raw booleans, derives
@@ -39,6 +42,9 @@ export class Engine {
   private alarmsById = new Map<string, Alarm>()
   private pending = new Map<string, PendingCommand>()
   private gateMeta = new Map<string, { positions: Set<number>; binary: boolean; hasAck: boolean }>()
+  private lint: LintFinding[] = []
+  private lintSignature = ''
+  private lastBand = new Map<string, { lo: number | null; hi: number | null }>()
   private connected = false
   private mode: string
   private snapshot: Snapshot
@@ -75,6 +81,39 @@ export class Engine {
 
   getSnapshot(): Snapshot {
     return this.snapshot
+  }
+
+  getLint(): LintFinding[] {
+    return this.lint
+  }
+
+  /** Stepped band history per sensor, extended to `now` with the live band. */
+  getTrends(sinceMs: number): TrendSeries[] {
+    const now = Date.now()
+    const bySensor = this.events.samplesSince(now - sinceMs)
+    const liveById = new Map(this.snapshot.sensors.map((s) => [s.id, s]))
+    const ids = new Set<string>([...bySensor.keys(), ...liveById.keys()])
+    const out: TrendSeries[] = []
+    for (const id of ids) {
+      const samples = [...(bySensor.get(id) ?? [])]
+      const live = liveById.get(id)
+      if (live) samples.push({ ts: now, lo: live.lo, hi: live.hi, fraction: live.fraction })
+      out.push({ sensorId: id, label: live?.label ?? id, unit: live?.unit ?? null, samples })
+    }
+    return out.sort((a, b) => a.sensorId.localeCompare(b.sensorId))
+  }
+
+  /** Recompute config↔save lint only when the discovered signal *name set* changes. */
+  private refreshLint(adapters: SignalReading[], levers: SignalReading[]): void {
+    const signature = `${adapters.map((a) => a.name).sort().join('|')}::${levers.map((l) => l.name).sort().join('|')}`
+    if (signature === this.lintSignature) return
+    this.lintSignature = signature
+    this.lint = lintConfig(this.config, adapters, levers)
+    const errors = this.lint.filter((f) => f.severity === 'error').length
+    const warnings = this.lint.filter((f) => f.severity === 'warning').length
+    if (errors + warnings > 0) {
+      this.events.append('system', 'lint', `Config lint: ${errors} error(s), ${warnings} warning(s) — see /api/lint`)
+    }
   }
 
   // ── Commands ──────────────────────────────────────────────────────────
@@ -158,6 +197,7 @@ export class Engine {
     try {
       const [adapters, levers] = await Promise.all([this.api.listAdapters(), this.api.listLevers()])
       this.setConnected(true)
+      this.refreshLint(adapters, levers)
 
       const seen = new Set<string>()
       for (const reading of adapters) {
@@ -249,10 +289,24 @@ export class Engine {
 
     const gates = this.deriveGates(commandsByGate, acksByGate, now)
 
+    // Record band transitions for trend charts (sparse: only when the band moves).
+    for (const sensor of sensors) {
+      const prev = this.lastBand.get(sensor.id)
+      if (!prev || prev.lo !== sensor.lo || prev.hi !== sensor.hi) {
+        this.lastBand.set(sensor.id, { lo: sensor.lo, hi: sensor.hi })
+        this.events.recordSample(sensor.id, sensor.lo, sensor.hi, sensor.fraction)
+      }
+    }
+
     const previousAlarms = this.alarmsById
     const alarms = evaluateAlarms(sensors, this.config.sensors, this.mode, previousAlarms, now)
     this.emitAlarmEdges(previousAlarms, alarms)
     this.alarmsById = new Map(alarms.map((a) => [a.id, a]))
+
+    const signals = new Map<string, boolean>()
+    for (const [name, entry] of this.adapterStates) signals.set(name, entry.accepted)
+    const insights: RelationshipInsight[] = deriveInsights(this.config.relationships ?? [], sensors, gates, signals)
+    const network: NetworkView | null = deriveNetwork(this.config.network, gates, signals)
 
     const modeConfig = this.config.modes.find((m) => m.id === this.mode)
     this.snapshot = {
@@ -264,6 +318,9 @@ export class Engine {
       gates,
       alarms,
       unmapped: unmapped.sort((a, b) => a.name.localeCompare(b.name)),
+      lint: this.lint,
+      insights,
+      network,
       updatedAt: now,
     }
     for (const listener of this.listeners) listener(this.snapshot)
@@ -358,6 +415,9 @@ export class Engine {
       gates: [],
       alarms: [],
       unmapped: [],
+      lint: [],
+      insights: [],
+      network: null,
       updatedAt: 0,
     }
   }

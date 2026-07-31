@@ -78,10 +78,10 @@ separate confirm step. Good default; keep it.
 | **1** | Gateway: discovery, band telemetry, trends, gates, interlocks, alarms, event store, WS | ✅ v0.1 |
 | **1** | Dashboard: band gauges, gate controls, alarms, events, modes, unmapped signals | ✅ v0.1 |
 | **1** | Simulator for game-free development | ✅ v0.1 |
-| **2** | Config linter; sensor↔gate relationship engine ("North Fields drying *because* …") | ▢ next |
-| **2** | Contamination network view (nodes + isolated-route animation) | ▢ next |
-| **2** | Trend charts from the event store (SVG, no false precision) | ▢ next |
-| **3** | Hue annunciator (4 environmental / 3 water / 2 colony / 1 ack) | ▢ |
+| **2** | Config linter; sensor↔gate relationship engine ("North Fields drying *because* …") | ✅ v0.2 |
+| **2** | Contamination network view (nodes + isolated-route animation) | ✅ v0.2 |
+| **2** | Trend charts from the event store (SVG, no false precision) | ✅ v0.2 |
+| **3** | Hue annunciator (4 environmental / 3 water / 2 colony / 1 ack) | ▢ next |
 | **3** | Govee tower annunciator (whole-lamp first, segments if LAN allows) | ▢ |
 | **3** | PC audio hydraulic-event cues (low latency, local) | ▢ |
 | **4** | Discord: status embed, #waterworks log, #alerts, #engineering-log | ▢ |

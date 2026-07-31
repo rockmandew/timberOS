@@ -45,6 +45,64 @@ export interface RawSignal {
   kind: 'adapter' | 'lever'
 }
 
+export type LintSeverity = 'error' | 'warning' | 'info'
+
+export interface LintFinding {
+  severity: LintSeverity
+  code: string
+  subject: string
+  message: string
+}
+
+export interface RelationshipInsight {
+  sensorId: string
+  severity: 'info' | 'warning' | 'critical'
+  headline: string
+  because: string
+  causes: string[]
+}
+
+export type NodeKind = 'source' | 'reservoir' | 'junction' | 'field' | 'outlet' | 'colony'
+
+export interface NetworkNodeView {
+  id: string
+  label: string
+  kind: NodeKind
+  x: number
+  y: number
+  contaminated: boolean
+}
+
+export interface NetworkEdgeView {
+  id: string
+  from: string
+  to: string
+  gate: string | null
+  flowing: boolean
+  contaminated: boolean
+  isolated: boolean
+  label: string | null
+}
+
+export interface NetworkView {
+  nodes: NetworkNodeView[]
+  edges: NetworkEdgeView[]
+}
+
+export interface TrendSample {
+  ts: number
+  lo: number | null
+  hi: number | null
+  fraction: number | null
+}
+
+export interface TrendSeries {
+  sensorId: string
+  label: string
+  unit: string | null
+  samples: TrendSample[]
+}
+
 export interface Snapshot {
   connected: boolean
   simulated: boolean
@@ -54,6 +112,9 @@ export interface Snapshot {
   gates: GateState[]
   alarms: Alarm[]
   unmapped: RawSignal[]
+  lint: LintFinding[]
+  insights: RelationshipInsight[]
+  network: NetworkView | null
   updatedAt: number
 }
 

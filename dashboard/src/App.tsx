@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
 import { AlarmPanel } from './components/AlarmPanel'
 import { BandGauge } from './components/BandGauge'
+import { ConfigHealth } from './components/ConfigHealth'
+import { ContaminationMap } from './components/ContaminationMap'
+import { Diagnostics } from './components/Diagnostics'
 import { EventLog } from './components/EventLog'
 import { GateControl } from './components/GateControl'
 import { ModeSelector } from './components/ModeSelector'
+import { TrendChart } from './components/TrendChart'
 import { useTimberOS } from './store'
 
 const MODE_LABELS: Record<string, string> = {
@@ -16,7 +20,7 @@ const MODE_LABELS: Record<string, string> = {
 }
 
 export function App() {
-  const { snapshot, events, gatewayOnline, lastCommand, connect, dismissCommandResult } = useTimberOS()
+  const { snapshot, events, trends, gatewayOnline, lastCommand, connect, refreshTrends, dismissCommandResult } = useTimberOS()
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => connect(), [connect])
@@ -24,6 +28,10 @@ export function App() {
     const id = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(id)
   }, [])
+  useEffect(() => {
+    const id = setInterval(() => void refreshTrends(), 15000)
+    return () => clearInterval(id)
+  }, [refreshTrends])
 
   const alarmCount = snapshot?.alarms.length ?? 0
   const headline = !gatewayOnline
@@ -72,8 +80,40 @@ export function App() {
         </section>
 
         <section className="panel">
+          <h2>Diagnostics — Why</h2>
+          <Diagnostics insights={snapshot?.insights ?? []} />
+        </section>
+
+        <section className="panel">
+          <h2>Contamination Network</h2>
+          <div className="panel-body">
+            {snapshot?.network ? (
+              <ContaminationMap network={snapshot.network} />
+            ) : (
+              <div className="unmapped">No network configured. Add a <code>network</code> block to config.</div>
+            )}
+          </div>
+        </section>
+
+        <section className="panel">
           <h2>Active Alarms</h2>
           <AlarmPanel alarms={snapshot?.alarms ?? []} now={now} />
+        </section>
+
+        <section className="panel">
+          <h2>Sensor Trends</h2>
+          <div className="panel-body trends">
+            {trends.length > 0 ? (
+              trends.map((series) => <TrendChart key={series.sensorId} series={series} />)
+            ) : (
+              <div className="unmapped">Collecting band history…</div>
+            )}
+          </div>
+        </section>
+
+        <section className="panel">
+          <h2>Config Health</h2>
+          <ConfigHealth lint={snapshot?.lint ?? []} />
         </section>
 
         <section className="panel">

@@ -1,9 +1,12 @@
 import { create } from 'zustand'
-import type { CommandResult, EventRecord, Snapshot } from './types'
+import type { CommandResult, EventRecord, Snapshot, TrendSeries } from './types'
+
+const TREND_WINDOW_MS = 1_800_000 // 30 minutes
 
 interface TimberOSStore {
   snapshot: Snapshot | null
   events: EventRecord[]
+  trends: TrendSeries[]
   /** Gateway (not game) connectivity — the WS to :8081. */
   gatewayOnline: boolean
   /** Transient result of the last command, for the toast strip. */
@@ -11,6 +14,7 @@ interface TimberOSStore {
 
   connect(): void
   refreshEvents(): Promise<void>
+  refreshTrends(): Promise<void>
   commandGate(gateId: string, position: number | 'OPEN' | 'CLOSED', confirm?: boolean): Promise<CommandResult>
   setMode(mode: string): Promise<CommandResult>
   dismissCommandResult(): void
@@ -19,6 +23,7 @@ interface TimberOSStore {
 export const useTimberOS = create<TimberOSStore>((set, get) => ({
   snapshot: null,
   events: [],
+  trends: [],
   gatewayOnline: false,
   lastCommand: null,
 
@@ -29,6 +34,7 @@ export const useTimberOS = create<TimberOSStore>((set, get) => ({
     socket.onopen = () => {
       set({ gatewayOnline: true })
       void get().refreshEvents()
+      void get().refreshTrends()
     }
     socket.onmessage = (msg) => {
       const parsed = JSON.parse(msg.data as string) as { type: string; data: Snapshot }
@@ -45,6 +51,15 @@ export const useTimberOS = create<TimberOSStore>((set, get) => ({
     try {
       const res = await fetch('/api/events?limit=100')
       if (res.ok) set({ events: (await res.json()) as EventRecord[] })
+    } catch {
+      // Gateway offline — the WS reconnect loop will retry.
+    }
+  },
+
+  async refreshTrends() {
+    try {
+      const res = await fetch(`/api/trends?sinceMs=${TREND_WINDOW_MS}`)
+      if (res.ok) set({ trends: (await res.json()) as TrendSeries[] })
     } catch {
       // Gateway offline — the WS reconnect loop will retry.
     }

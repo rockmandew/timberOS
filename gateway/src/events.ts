@@ -12,6 +12,7 @@ import type { EventRecord } from './types.js'
 export class EventStore {
   private db: DatabaseSync
   private insert: ReturnType<DatabaseSync['prepare']>
+  private insertSample: ReturnType<DatabaseSync['prepare']>
 
   constructor(path: string) {
     if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
@@ -27,14 +28,46 @@ export class EventStore {
       );
       CREATE INDEX IF NOT EXISTS idx_events_ts ON events (ts);
       CREATE INDEX IF NOT EXISTS idx_events_subject ON events (subject, ts);
+
+      CREATE TABLE IF NOT EXISTS samples (
+        id       INTEGER PRIMARY KEY AUTOINCREMENT,
+        ts       INTEGER NOT NULL,
+        sensor   TEXT    NOT NULL,
+        lo       REAL,
+        hi       REAL,
+        fraction REAL
+      );
+      CREATE INDEX IF NOT EXISTS idx_samples_sensor_ts ON samples (sensor, ts);
     `)
     this.insert = this.db.prepare(
       'INSERT INTO events (ts, kind, subject, message, data) VALUES (?, ?, ?, ?, ?)',
+    )
+    this.insertSample = this.db.prepare(
+      'INSERT INTO samples (ts, sensor, lo, hi, fraction) VALUES (?, ?, ?, ?, ?)',
     )
   }
 
   append(kind: string, subject: string, message: string, data?: unknown): void {
     this.insert.run(Date.now(), kind, subject, message, data === undefined ? null : JSON.stringify(data))
+  }
+
+  /** Record a band transition for trend charts (kept out of the human event log). */
+  recordSample(sensorId: string, lo: number | null, hi: number | null, fraction: number | null): void {
+    this.insertSample.run(Date.now(), sensorId, lo, hi, fraction)
+  }
+
+  /** Stepped band history since `sinceTs`, grouped by sensor id, ascending in time. */
+  samplesSince(sinceTs: number): Map<string, Array<{ ts: number; lo: number | null; hi: number | null; fraction: number | null }>> {
+    const rows = this.db
+      .prepare('SELECT ts, sensor, lo, hi, fraction FROM samples WHERE ts >= ? ORDER BY ts ASC')
+      .all(sinceTs) as Array<{ ts: number; sensor: string; lo: number | null; hi: number | null; fraction: number | null }>
+    const bySensor = new Map<string, Array<{ ts: number; lo: number | null; hi: number | null; fraction: number | null }>>()
+    for (const row of rows) {
+      const list = bySensor.get(row.sensor) ?? []
+      list.push({ ts: row.ts, lo: row.lo, hi: row.hi, fraction: row.fraction })
+      bySensor.set(row.sensor, list)
+    }
+    return bySensor
   }
 
   recent(limit = 100): EventRecord[] {

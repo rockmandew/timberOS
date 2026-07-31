@@ -20,6 +20,13 @@ export async function buildServer(engine: Engine): Promise<FastifyInstance> {
     return engine.events.recent(limit)
   })
 
+  app.get('/api/lint', async () => engine.getLint())
+
+  app.get<{ Querystring: { sinceMs?: string } }>('/api/trends', async (req) => {
+    const sinceMs = Math.min(24 * 3600_000, Math.max(60_000, Number(req.query.sinceMs ?? 1_800_000) || 1_800_000))
+    return engine.getTrends(sinceMs)
+  })
+
   app.post<{
     Params: { gateId: string }
     Body: { position?: number | 'OPEN' | 'CLOSED'; confirm?: boolean }
