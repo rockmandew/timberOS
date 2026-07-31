@@ -1,5 +1,5 @@
 import type { HueConfig } from '../config.js'
-import type { Alarm, Snapshot } from '../types.js'
+import type { Alarm, IntegrationKind, Snapshot } from '../types.js'
 import type { Annunciator } from './annunciator.js'
 
 /**
@@ -22,16 +22,26 @@ interface Status {
 
 export class HueAnnunciator implements Annunciator {
   readonly id = 'hue'
+  readonly label = 'Philips Hue'
+  readonly kind: IntegrationKind = 'light'
+  enabled: boolean
+  readonly available: boolean
+  readonly detail: string
   private readonly base: string
   private readonly group: string
   private readonly transition: number
   private lastKey = ''
   private warned = false
 
-  constructor(cfg: HueConfig, username: string) {
+  constructor(cfg: HueConfig, username: string, enabled: boolean, available: boolean) {
     this.base = `http://${cfg.bridgeIp}/api/${username}`
     this.group = cfg.group ?? '0'
     this.transition = Math.max(0, Math.round((cfg.transitionMs ?? 800) / 100))
+    this.enabled = enabled
+    this.available = available
+    this.detail = available
+      ? `bridge ${cfg.bridgeIp} · group ${this.group}`
+      : `bridge ${cfg.bridgeIp} · set HUE_USERNAME in .env`
   }
 
   onSnapshot(snapshot: Snapshot): void {

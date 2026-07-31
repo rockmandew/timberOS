@@ -55,6 +55,15 @@ without touching the engine. Recommendation on ordering — the original plan's
 "Discord last" instinct is right; generalize it to **all** annunciators. Get the
 local supervisory loop trustworthy first, then decorate.
 
+Because they're one interface, they also share one **live on/off control**: each
+annunciator carries an `enabled` flag the engine checks before dispatching, and
+the dashboard's *Integrations* panel flips it at runtime (`POST
+/api/integrations/:id`) with no gateway restart. The state rides the snapshot's
+`integrations` list, so every display stays in sync. PC audio is the one
+annunciator that *plays* client-side (Web Audio on the supervisory PC, where the
+speakers are), but it still registers as a normal integration so it shares the
+same single toggle and enable-state plumbing as the LAN devices.
+
 ### 7. One thing to drop from v1: RGBIC segment-mapping on the Govee tower
 The vertical five-zone status column is lovely but depends on per-model LAN
 support for addressable segments, which varies. Recommendation: ship the Govee
@@ -82,8 +91,9 @@ separate confirm step. Good default; keep it.
 | **2** | Contamination network view (nodes + isolated-route animation) | ✅ v0.2 |
 | **2** | Trend charts from the event store (SVG, no false precision) | ✅ v0.2 |
 | **3** | Hue annunciator (whole-group status color; per-role split later) | ✅ v0.3 |
+| **3** | Per-integration dashboard toggles (live enable/disable, no restart) | ✅ v0.3 |
+| **3** | PC audio hydraulic-event cues (low latency, local; Web Audio in the dashboard) | ✅ v0.3 |
 | **3** | Govee tower annunciator (whole-lamp first, segments if LAN allows) | ▢ |
-| **3** | PC audio hydraulic-event cues (low latency, local) | ▢ |
 | **4** | Discord: status embed, #waterworks log, #alerts, #engineering-log | ▢ |
 | **4** | Alexa: announcement webhook + safe voice macros | ▢ |
 | **5** | 49-inch transparent overlay (Electron/Tauri), #beaver-times digest | ▢ |

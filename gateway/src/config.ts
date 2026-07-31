@@ -119,12 +119,22 @@ export interface NetworkEdgeConfig {
 }
 
 /** Ambient output integrations (docs/ROADMAP.md Phase 3–4). Credentials come
- * from the gateway .env, never from this file or the browser. */
+ * from the gateway .env, never from this file or the browser. `enabled` here is
+ * only the *initial* state — each integration can be toggled live from the
+ * dashboard without restarting the gateway. */
 export interface AnnunciatorsConfig {
   hue?: HueConfig
+  audio?: AudioConfig
+}
+
+/** PC audio hydraulic-event cues, played in the dashboard browser (Web Audio). */
+export interface AudioConfig {
+  /** Initial on/off state (default: on). Toggle live from the dashboard. */
+  enabled?: boolean
 }
 
 export interface HueConfig {
+  /** Initial on/off state (default: off). Toggle live from the dashboard. */
   enabled?: boolean
   /** Bridge LAN IP (not a secret). The app key comes from HUE_USERNAME in .env. */
   bridgeIp: string

@@ -62,6 +62,17 @@ export interface RelationshipInsight {
   causes: string[]
 }
 
+export type IntegrationKind = 'light' | 'audio' | 'voice' | 'chat' | 'console'
+
+export interface IntegrationState {
+  id: string
+  label: string
+  kind: IntegrationKind
+  enabled: boolean
+  available: boolean
+  detail: string
+}
+
 export type NodeKind = 'source' | 'reservoir' | 'junction' | 'field' | 'outlet' | 'colony'
 
 export interface NetworkNodeView {
@@ -115,6 +126,7 @@ export interface Snapshot {
   lint: LintFinding[]
   insights: RelationshipInsight[]
   network: NetworkView | null
+  integrations: IntegrationState[]
   updatedAt: number
 }
 

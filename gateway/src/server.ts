@@ -22,6 +22,19 @@ export async function buildServer(engine: Engine): Promise<FastifyInstance> {
 
   app.get('/api/lint', async () => engine.getLint())
 
+  app.get('/api/integrations', async () => engine.getIntegrations())
+
+  app.post<{ Params: { id: string }; Body: { enabled?: boolean } }>('/api/integrations/:id', async (req, reply) => {
+    const enabled = req.body?.enabled
+    if (typeof enabled !== 'boolean') {
+      reply.code(400)
+      return { ok: false, status: 'error', message: 'Body must include boolean "enabled"' }
+    }
+    const result = engine.setIntegrationEnabled(req.params.id, enabled)
+    if (!result.ok) reply.code(result.status === 'error' ? 400 : 409)
+    return result
+  })
+
   app.get<{ Querystring: { sinceMs?: string } }>('/api/trends', async (req) => {
     const sinceMs = Math.min(24 * 3600_000, Math.max(60_000, Number(req.query.sinceMs ?? 1_800_000) || 1_800_000))
     return engine.getTrends(sinceMs)

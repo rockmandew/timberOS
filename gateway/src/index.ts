@@ -5,6 +5,7 @@ import { Engine } from './engine.js'
 import { EventStore } from './events.js'
 import { loadEnv } from './env.js'
 import { type Annunciator, ConsoleAnnunciator } from './integrations/annunciator.js'
+import { AudioAnnunciator } from './integrations/audio.js'
 import { HueAnnunciator } from './integrations/hue.js'
 import { buildServer } from './server.js'
 import { HttpTimberbornClient, type TimberbornApi } from './timberborn/client.js'
@@ -26,15 +27,25 @@ async function main(): Promise<void> {
   if (simulate) console.log('Running against the SIMULATOR — no game connection will be made.')
   else console.log(`Timberborn API: ${config.endpoints.baseUrl}`)
 
+  // Every integration is registered so it shows a dashboard toggle; the config
+  // `enabled` flags are only the initial state. Toggling is live at runtime.
   const annunciators: Annunciator[] = [new ConsoleAnnunciator()]
+
+  // PC audio cues — the tones play in the dashboard browser; this entry carries
+  // the shared on/off state (see integrations/audio.ts).
+  const audioEnabled = config.annunciators?.audio?.enabled ?? true
+  annunciators.push(new AudioAnnunciator(audioEnabled))
+  console.log(`PC audio cues → dashboard browser (${audioEnabled ? 'enabled' : 'disabled'})`)
+
   const hue = config.annunciators?.hue
-  if (hue?.enabled) {
+  if (hue?.bridgeIp) {
     const username = process.env['HUE_USERNAME']
-    if (username) {
-      annunciators.push(new HueAnnunciator(hue, username))
-      console.log(`Hue annunciator → bridge ${hue.bridgeIp} group ${hue.group ?? '0'}`)
+    const available = Boolean(username)
+    annunciators.push(new HueAnnunciator(hue, username ?? '', hue.enabled ?? false, available))
+    if (available) {
+      console.log(`Hue annunciator → bridge ${hue.bridgeIp} group ${hue.group ?? '0'} (${hue.enabled ? 'enabled' : 'disabled'})`)
     } else {
-      console.warn('Hue annunciator enabled in config but HUE_USERNAME is not set in .env — skipping.')
+      console.warn('Hue configured but HUE_USERNAME is not set in .env — the dashboard toggle will show it as unavailable.')
     }
   }
 

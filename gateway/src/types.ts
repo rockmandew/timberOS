@@ -103,6 +103,30 @@ export interface RelationshipInsight {
   causes: string[]
 }
 
+/**
+ * Kind of ambient output an integration drives, for iconography and grouping.
+ * `console` is the always-on gateway log and is not shown as a user toggle.
+ */
+export type IntegrationKind = 'light' | 'audio' | 'voice' | 'chat' | 'console'
+
+/**
+ * Dashboard-facing view of one annunciator/integration and its live on/off
+ * state. Toggled from the dashboard without restarting the gateway; the
+ * updated list rides the snapshot so every client stays in sync.
+ */
+export interface IntegrationState {
+  id: string
+  label: string
+  kind: IntegrationKind
+  enabled: boolean
+  /** Configured and usable right now (credentials present, etc.). A disabled
+   * but available integration can be switched on live; an unavailable one needs
+   * setup first (see `detail`). */
+  available: boolean
+  /** One-line status shown under the toggle, e.g. "bridge 192.168.1.2 · group 3". */
+  detail: string
+}
+
 export type NodeKind = 'source' | 'reservoir' | 'junction' | 'field' | 'outlet' | 'colony'
 
 export interface NetworkNodeView {
@@ -164,6 +188,8 @@ export interface Snapshot {
   insights: RelationshipInsight[]
   /** Contamination/flow network, or null when no `network` block is configured. */
   network: NetworkView | null
+  /** Ambient output integrations and their live on/off state (Hue, PC audio, …). */
+  integrations: IntegrationState[]
   updatedAt: number
 }
 

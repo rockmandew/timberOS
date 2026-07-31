@@ -17,6 +17,7 @@ interface TimberOSStore {
   refreshTrends(): Promise<void>
   commandGate(gateId: string, position: number | 'OPEN' | 'CLOSED', confirm?: boolean): Promise<CommandResult>
   setMode(mode: string): Promise<CommandResult>
+  setIntegration(id: string, enabled: boolean): Promise<CommandResult>
   dismissCommandResult(): void
 }
 
@@ -77,6 +78,15 @@ export const useTimberOS = create<TimberOSStore>((set, get) => ({
 
   async setMode(mode) {
     const result = await postJson<CommandResult>('/api/mode', { mode })
+    set({ lastCommand: result })
+    void get().refreshEvents()
+    return result
+  },
+
+  async setIntegration(id, enabled) {
+    // The authoritative on/off state rides back on the next snapshot over the WS;
+    // no optimistic local mutation needed.
+    const result = await postJson<CommandResult>(`/api/integrations/${encodeURIComponent(id)}`, { enabled })
     set({ lastCommand: result })
     void get().refreshEvents()
     return result

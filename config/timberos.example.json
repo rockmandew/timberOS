@@ -116,5 +116,19 @@
       { "id": "e-diversion", "from": "source-badwater", "to": "outlet-diversion", "gate": "FG.BADWATER.DIVERSION", "carriesContamination": true, "label": "Diversion" },
       { "id": "e-contam-inlet", "from": "source-badwater", "to": "junction-central", "gate": "FG.CENTRAL.CONTAM_INLET", "carriesContamination": true, "label": "Contam Inlet" }
     ]
+  },
+  "annunciators": {
+    "$comment": "Ambient outputs. `enabled` is only the INITIAL state — every integration has a live on/off toggle in the dashboard (no restart). Credentials never live here; they come from the gateway .env.",
+    "audio": {
+      "$comment": "PC hydraulic-event cues, played in the dashboard browser via Web Audio.",
+      "enabled": true
+    },
+    "hue": {
+      "$comment": "Set HUE_USERNAME in gateway/.env; toggle on from the dashboard once the bridge IP is correct.",
+      "enabled": false,
+      "bridgeIp": "192.168.1.2",
+      "group": "0",
+      "transitionMs": 800
+    }
   }
 }

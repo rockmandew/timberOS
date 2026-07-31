@@ -563,6 +563,105 @@ body {
 .lg-isolated { color: var(--ink-muted); }
 .lg-idle { color: var(--line); }
 
+/* ── Integrations & toggle switches ── */
+
+.integrations {
+  display: flex;
+  flex-direction: column;
+}
+
+.integration {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px dashed var(--line);
+}
+
+.integration:last-child { border-bottom: none; }
+.integration.off { opacity: 0.7; }
+
+.integration-icon {
+  flex: none;
+  width: 22px;
+  text-align: center;
+  font-size: 16px;
+}
+
+.integration-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.integration-name { color: var(--ink); }
+
+.integration-detail {
+  color: var(--ink-muted);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.switch {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.switch-track {
+  position: relative;
+  width: 40px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--panel-raised);
+  border: 1px solid var(--line);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+  transition: transform 0.15s, background 0.15s;
+}
+
+.switch.on .switch-track {
+  background: #1f3a24;
+  border-color: var(--good);
+}
+
+.switch.on .switch-thumb {
+  transform: translateX(20px);
+  background: var(--good);
+}
+
+.switch-label {
+  width: 28px;
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+}
+
+.switch.on .switch-label { color: var(--good); }
+
+.switch:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 /* ── Sensor trend ribbons ── */
 
 .trends {

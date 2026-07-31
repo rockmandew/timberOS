@@ -9,7 +9,7 @@ import { buildBandSensor, TrendTracker, type ThresholdReading } from './telemetr
 import { deriveNetwork } from './telemetry/network.js'
 import { deriveInsights } from './telemetry/relationships.js'
 import type { TimberbornApi } from './timberborn/client.js'
-import type { Alarm, BandSensor, GateState, LintFinding, NetworkView, RawSignal, RelationshipInsight, SignalReading, Snapshot, TrendSeries } from './types.js'
+import type { Alarm, BandSensor, GateState, IntegrationState, LintFinding, NetworkView, RawSignal, RelationshipInsight, SignalReading, Snapshot, TrendSeries } from './types.js'
 
 /**
  * The TimberOS engine: polls the game, debounces raw booleans, derives
@@ -85,6 +85,31 @@ export class Engine {
 
   getLint(): LintFinding[] {
     return this.lint
+  }
+
+  /** Dashboard-facing view of every user-toggleable integration (console excluded). */
+  getIntegrations(): IntegrationState[] {
+    return this.annunciators
+      .filter((a) => a.kind !== 'console')
+      .map((a) => ({ id: a.id, label: a.label, kind: a.kind, enabled: a.enabled, available: a.available, detail: a.detail }))
+  }
+
+  /** Flip an integration on/off live — no gateway restart, honoured on the next event. */
+  setIntegrationEnabled(id: string, enabled: boolean): CommandResult {
+    const target = this.annunciators.find((a) => a.id === id && a.kind !== 'console')
+    if (!target) return { ok: false, status: 'error', message: `Unknown integration: ${id}` }
+    if (target.enabled === enabled) {
+      return { ok: true, status: 'accepted', message: `${target.label} already ${enabled ? 'enabled' : 'disabled'}` }
+    }
+    target.enabled = enabled
+    this.events.append('integration', target.id, `${target.label} ${enabled ? 'ENABLED' : 'DISABLED'} from dashboard`)
+    // A freshly-enabled annunciator catches up to the current state immediately.
+    if (enabled) {
+      void target.onMode(this.mode)
+      void target.onSnapshot(this.snapshot)
+    }
+    this.rebuildSnapshot(Date.now())
+    return { ok: true, status: 'accepted', message: `${target.label} ${enabled ? 'enabled' : 'disabled'}` }
   }
 
   /** Stepped band history per sensor, extended to `now` with the live band. */
@@ -184,7 +209,7 @@ export class Engine {
     if (mode.id === this.mode) return { ok: true, status: 'accepted', message: `Already in ${mode.label}` }
     this.mode = mode.id
     this.events.append('mode', 'system', `Operating mode → ${mode.label}`)
-    for (const a of this.annunciators) void a.onMode(mode.id)
+    for (const a of this.annunciators) if (a.enabled) void a.onMode(mode.id)
     this.rebuildSnapshot(Date.now())
     return { ok: true, status: 'accepted', message: `Operating mode set to ${mode.label}` }
   }
@@ -321,10 +346,11 @@ export class Engine {
       lint: this.lint,
       insights,
       network,
+      integrations: this.getIntegrations(),
       updatedAt: now,
     }
     for (const listener of this.listeners) listener(this.snapshot)
-    for (const a of this.annunciators) void a.onSnapshot(this.snapshot)
+    for (const a of this.annunciators) if (a.enabled) void a.onSnapshot(this.snapshot)
   }
 
   private deriveGates(
@@ -387,13 +413,13 @@ export class Engine {
     for (const alarm of current) {
       if (!previous.has(alarm.id)) {
         this.events.append('alarm', alarm.id, `RAISED [${alarm.severity}] ${alarm.message}`)
-        for (const a of this.annunciators) void a.onAlarm(alarm, 'raised')
+        for (const a of this.annunciators) if (a.enabled) void a.onAlarm(alarm, 'raised')
       }
     }
     for (const [id, alarm] of previous) {
       if (!currentIds.has(id)) {
         this.events.append('alarm', id, `CLEARED ${alarm.message}`)
-        for (const a of this.annunciators) void a.onAlarm(alarm, 'cleared')
+        for (const a of this.annunciators) if (a.enabled) void a.onAlarm(alarm, 'cleared')
       }
     }
   }
@@ -418,6 +444,7 @@ export class Engine {
       lint: [],
       insights: [],
       network: null,
+      integrations: this.getIntegrations(),
       updatedAt: 0,
     }
   }

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { AudioCues } from './audio'
 import { AlarmPanel } from './components/AlarmPanel'
 import { BandGauge } from './components/BandGauge'
 import { ConfigHealth } from './components/ConfigHealth'
@@ -6,9 +7,11 @@ import { ContaminationMap } from './components/ContaminationMap'
 import { Diagnostics } from './components/Diagnostics'
 import { EventLog } from './components/EventLog'
 import { GateControl } from './components/GateControl'
+import { IntegrationsPanel } from './components/IntegrationsPanel'
 import { ModeSelector } from './components/ModeSelector'
 import { TrendChart } from './components/TrendChart'
 import { useTimberOS } from './store'
+import type { Snapshot } from './types'
 
 const MODE_LABELS: Record<string, string> = {
   normal: 'NORMAL',
@@ -24,6 +27,7 @@ export function App() {
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => connect(), [connect])
+  useAudioCues(snapshot)
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(id)
@@ -77,6 +81,11 @@ export function App() {
           <div className="panel-body">
             <ModeSelector current={snapshot?.mode ?? 'normal'} />
           </div>
+        </section>
+
+        <section className="panel">
+          <h2>Integrations</h2>
+          <IntegrationsPanel integrations={snapshot?.integrations ?? []} />
         </section>
 
         <section className="panel">
@@ -144,6 +153,35 @@ export function App() {
       )}
     </>
   )
+}
+
+/**
+ * Drives the PC audio cues from the live snapshot. The player is created once
+ * and follows the `audio` integration's on/off state; the Web Audio context is
+ * unlocked on the operator's first interaction (browser autoplay policy).
+ */
+function useAudioCues(snapshot: Snapshot | null) {
+  const cuesRef = useRef<AudioCues | null>(null)
+  if (!cuesRef.current) cuesRef.current = new AudioCues()
+  const audioEnabled = snapshot?.integrations.find((i) => i.id === 'audio')?.enabled ?? false
+
+  useEffect(() => {
+    cuesRef.current?.setEnabled(audioEnabled)
+  }, [audioEnabled])
+
+  useEffect(() => {
+    const unlock = () => cuesRef.current?.resume()
+    window.addEventListener('pointerdown', unlock, { once: true })
+    window.addEventListener('keydown', unlock, { once: true })
+    return () => {
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('keydown', unlock)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (snapshot) cuesRef.current?.handle(snapshot)
+  }, [snapshot])
 }
 
 function ConnectionChip({ online, gameConnected, simulated }: { online: boolean; gameConnected: boolean; simulated: boolean }) {

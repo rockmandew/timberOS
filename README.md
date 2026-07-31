@@ -88,19 +88,42 @@ gateway/     Node + TypeScript gateway (the brain)
   src/timberborn/   API client + offline simulator
   src/telemetry/    band derivation, trends, alarms
   src/rules/        safety interlocks
-  src/integrations/ annunciator interface (console impl in v1)
+  src/integrations/ annunciator interface + console / Hue / PC-audio outputs
 dashboard/   React + Vite + Zustand supervisory UI
 config/      example config + naming-driven mappings
 docs/        NAMING.md (the contract) + ROADMAP.md (recommendations & phases)
 ```
 
+## Annunciators & integration toggles
+
+Ambient outputs — Hue, PC audio, and (later) Govee / Discord / Alexa — are all
+the same kind of thing: an output that *observes* state and never commands a
+gate. Each is registered in one place and gets a live **toggle switch** in the
+dashboard's *Integrations* panel, so you can turn any of them on or off at will
+without restarting the gateway. The on/off state rides the snapshot, so flipping
+a toggle on one display reflects on every other one within a tick. The
+`enabled` flags in `config/timberos.json` are only the *initial* state.
+
+- **PC audio cues** play in the dashboard browser via the Web Audio API — no
+  audio files, genuinely low-latency and local to the supervisory PC. Distinct
+  synthesised tones sound for the events you need to hear without looking:
+  critical vs. warning alarm raised, all-clear, connection lost/restored,
+  operating-mode change, and gate command confirmed/failed. (Browsers require a
+  first click/keypress before audio can start — the cues arm on your first
+  interaction with the dashboard.)
+- **Philips Hue** colours a group to reflect overall status; its credential
+  (`HUE_USERNAME`) lives only in the gateway `.env`, never the browser. The
+  toggle shows it as *unavailable* until that key is set.
+
 ## Status
 
-v0.2 — Phases 1 & 2 complete: the full local supervisory loop (discovery → bands →
-gates → interlocks → alarms → events) plus the config linter, the sensor↔gate
-relationship engine ("…drying *because* the irrigation gate is closed"), the
-contamination network view, and event-store trend ribbons — all working against
-the simulator, with a control-room dashboard whose status palette is validated
-for color-blindness and contrast. Hardware annunciators (Hue / Govee / PC audio)
-are next. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the phased plan and the
-design recommendations behind it.
+v0.3 — Phases 1–3 (in progress): the full local supervisory loop (discovery →
+bands → gates → interlocks → alarms → events) plus the config linter, the
+sensor↔gate relationship engine ("…drying *because* the irrigation gate is
+closed"), the contamination network view, and event-store trend ribbons — all
+working against the simulator, with a control-room dashboard whose status
+palette is validated for color-blindness and contrast. Annunciators are landing:
+the Hue status light, the PC-audio hydraulic-event cues, and per-integration
+dashboard toggles are in; Govee / Discord / Alexa are next. See
+[`docs/ROADMAP.md`](docs/ROADMAP.md) for the phased plan and the design
+recommendations behind it.
