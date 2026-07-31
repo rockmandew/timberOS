@@ -118,6 +118,24 @@ export interface NetworkEdgeConfig {
   label?: string
 }
 
+/** Ambient output integrations (docs/ROADMAP.md Phase 3–4). Credentials come
+ * from the gateway .env, never from this file or the browser. */
+export interface AnnunciatorsConfig {
+  hue?: HueConfig
+}
+
+export interface HueConfig {
+  enabled?: boolean
+  /** Bridge LAN IP (not a secret). The app key comes from HUE_USERNAME in .env. */
+  bridgeIp: string
+  /** Hue group id to drive as the status light (e.g. a room). */
+  group?: string
+  /** Individual light ids (informational; v1 drives the group). */
+  lights?: string[]
+  /** Colour fade time in ms. */
+  transitionMs?: number
+}
+
 export interface EndpointsConfig {
   /** Base URL of the Timberborn HTTP API. */
   baseUrl: string
@@ -152,6 +170,8 @@ export interface TimberOSConfig {
   relationships?: RelationshipConfig[]
   /** Optional contamination/flow network topology. */
   network?: NetworkConfig
+  /** Optional ambient output integrations (docs/ROADMAP.md Phase 3–4). */
+  annunciators?: AnnunciatorsConfig
 }
 
 const HERE = dirname(fileURLToPath(import.meta.url))
