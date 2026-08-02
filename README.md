@@ -93,6 +93,18 @@ npm install
 
 `npm install` takes a minute or two and downloads everything TimberOS needs.
 
+> **Optional one-shot setup + check.** In place of `npm install`, you can run the setup helper. It
+> installs dependencies *and* checks the live-data path (Step 4) for you — finding your Timberborn
+> install on **any drive** (it reads your Steam library list) and reporting whether the Data Console
+> mod is installed in your **real** Mods folder (it honors OneDrive's Documents redirection):
+> ```powershell
+> pwsh scripts/setup.ps1
+> ```
+> Only have **Windows PowerShell** (the built-in blue icon) and not PowerShell 7 (`pwsh`)? Use:
+> ```powershell
+> powershell -ExecutionPolicy Bypass -File scripts/setup.ps1
+> ```
+
 ### Step 3 — Run it (with the built-in simulator, no game required)
 
 You need **two** PowerShell windows — one for the gateway (the brain), one for the dashboard (the
