@@ -279,13 +279,53 @@ body::before {
   gap: 6px;
 }
 
-.colony-power {
+.colony-power,
+.colony-production {
   display: flex;
   flex-direction: column;
   gap: 8px;
   border-top: 1px solid var(--line);
   padding-top: 12px;
 }
+
+// ─────────────────────────── Production gears ───────────────────────────
+
+.production {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.gears-svg {
+  width: 110px;
+  height: 76px;
+  display: block;
+
+  .gear {
+    transform-box: fill-box;
+    transform-origin: center;
+    fill: var(--brass);
+    stroke: var(--surface);
+    stroke-width: 1.5;
+  }
+  .gear .gear-hole { fill: var(--panel); stroke: none; }
+
+  &.is-spinning .gear-a { animation: tos-spin var(--gear-duration, 4s) linear infinite; }
+  &.is-spinning .gear-b { animation: tos-spin var(--gear-duration, 4s) linear infinite reverse; }
+}
+
+.production-headline { color: var(--ink); }
+.production-headline strong { color: var(--brass); font-size: 18px; font-variant-numeric: tabular-nums; }
+.production-util { color: var(--ink-secondary); }
+.production-reason { color: var(--ink-secondary); font-size: 12px; margin-top: 2px; }
+.production-reason.ok { color: var(--good); }
+
+.production.tone-constrained .gear,
+.production.tone-stopped .gear { fill: var(--warning); }
+.production.tone-constrained .production-reason,
+.production.tone-stopped .production-reason { color: var(--warning); }
+.production.tone-muted .gear { fill: var(--ink-muted); }
 
 // ─────────────────────────── Keyframes ───────────────────────────
 

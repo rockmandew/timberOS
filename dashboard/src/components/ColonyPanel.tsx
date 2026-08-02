@@ -3,6 +3,7 @@ import type { ColonyFeedState, ColonyFeedStatus, ColonyResource, ColonyWeather }
 import { ContaminationWave } from './environment/ContaminationWave'
 import { ResourceIcon } from './icons/ResourceIcon'
 import { PowerTurbineVisual } from './power/PowerTurbineVisual'
+import { ProductionMotion } from './production/ProductionMotion'
 
 /**
  * Live colony telemetry from the timberOS Data Console mod (population,
@@ -82,12 +83,14 @@ export function ColonyPanel({ feed }: { feed: ColonyFeedState | undefined }) {
 
 function ColonyBody({ feed }: { feed: ColonyFeedState }) {
   const snap = feed.colony!
-  const { game, population, resources, weather, power } = snap.payload
+  const { game, population, resources, weather, power, production, water } = snap.payload
   const stale = feed.status !== 'connected'
   const contaminatedPct =
     population && population.contaminatedBeavers != null && population.total > 0
       ? (population.contaminatedBeavers / population.total) * 100
       : null
+  const waterContamPct =
+    water && water.contaminatedFraction != null ? water.contaminatedFraction * 100 : null
 
   return (
     <>
@@ -120,6 +123,17 @@ function ColonyBody({ feed }: { feed: ColonyFeedState }) {
 
       {contaminatedPct != null && contaminatedPct > 0 && (
         <ContaminationWave percent={contaminatedPct} label="Colony contamination" stale={stale} />
+      )}
+
+      {waterContamPct != null && waterContamPct > 0 && (
+        <ContaminationWave percent={waterContamPct} label="Water contamination" stale={stale} />
+      )}
+
+      {production && (
+        <div className="colony-production">
+          <h3 className="colony-subhead">Production</h3>
+          <ProductionMotion production={production} stale={stale} />
+        </div>
       )}
 
       {power && (

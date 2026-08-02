@@ -32,6 +32,9 @@ export interface ColonySnapshot {
     resources: Array<{ goodId: string; amount: number; capacity: number }> | null
     weather: Record<string, unknown> | null
     power: Record<string, unknown> | null
+    // Added in Data Console schema 1.2.0 (optional; older mods omit them).
+    production?: Record<string, unknown> | null
+    water?: Record<string, unknown> | null
     collectors: Array<{ name: string; status: string; error: string | null }>
   }
 }

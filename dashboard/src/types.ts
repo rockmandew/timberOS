@@ -174,6 +174,28 @@ export interface ColonyPower {
   networks: ColonyPowerNetwork[]
 }
 
+export interface ColonyProduction {
+  buildings: number
+  operating: number
+  utilization: number | null
+  paused: number
+  noWorkers: number
+  noPower: number
+  noIngredients: number
+  outputFull: number
+  noRecipe: number
+  idle: number
+  dominantConstraint: string | null
+}
+
+export interface ColonyWater {
+  sources: number
+  contaminatedSources: number
+  /** Flow-weighted share of incoming water that is contaminated (0–1). */
+  contaminatedFraction: number | null
+  totalStrength: number
+}
+
 export interface ColonyGameTime {
   cycle: number
   cycleDay: number
@@ -192,6 +214,8 @@ export interface ColonySnapshot {
     resources: ColonyResource[] | null
     weather: ColonyWeather | null
     power: ColonyPower | null
+    production?: ColonyProduction | null
+    water?: ColonyWater | null
     collectors: Array<{ name: string; status: string; error: string | null }>
   }
 }
