@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { ColonyFeedState, ColonyFeedStatus, ColonyResource, ColonyWeather } from '../types'
 import { ContaminationWave } from './environment/ContaminationWave'
 import { ResourceIcon } from './icons/ResourceIcon'
@@ -206,12 +206,13 @@ function WeatherBadge({ weather }: { weather: ColonyWeather }) {
 }
 
 function ResourceList({ resources }: { resources: ColonyResource[] }) {
+  const [showAll, setShowAll] = useState(false)
   const sorted = [...resources].sort((a, b) => b.amount - a.amount)
-  const shown = sorted.slice(0, MAX_RESOURCES)
-  const hidden = sorted.length - shown.length
+  const shown = showAll ? sorted : sorted.slice(0, MAX_RESOURCES)
+  const hidden = sorted.length - MAX_RESOURCES
 
   return (
-    <div className="resource-list">
+    <div className={`resource-list${showAll ? ' resource-list-scroll' : ''}`}>
       {shown.map((r) => {
         const frac = r.capacity > 0 ? Math.min(1, r.amount / r.capacity) : null
         const near = frac !== null && frac >= 0.92
@@ -233,7 +234,11 @@ function ResourceList({ resources }: { resources: ColonyResource[] }) {
           </div>
         )
       })}
-      {hidden > 0 && <div className="resource-more">+{hidden} more goods</div>}
+      {hidden > 0 && (
+        <button type="button" className="resource-more" onClick={() => setShowAll((v) => !v)} aria-expanded={showAll}>
+          {showAll ? 'Show fewer' : `+${hidden} more goods — show all`}
+        </button>
+      )}
     </div>
   )
 }

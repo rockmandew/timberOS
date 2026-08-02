@@ -80,13 +80,21 @@ export async function buildServer(engine: Engine, colonyFeed?: ColonyFeed): Prom
   })
 
   app.get('/ws', { websocket: true }, (socket) => {
-    socket.send(JSON.stringify({ type: 'snapshot', data: withColony(engine.getSnapshot()) }))
-    const unsubscribe = engine.onChange((snapshot) => {
+    const sendCurrent = (): void => {
       if (socket.readyState === socket.OPEN) {
-        socket.send(JSON.stringify({ type: 'snapshot', data: withColony(snapshot) }))
+        socket.send(JSON.stringify({ type: 'snapshot', data: withColony(engine.getSnapshot()) }))
       }
+    }
+    sendCurrent()
+    // Push on every engine change (waterworks), AND on a 1s heartbeat so the colony
+    // feed refreshes live even when the waterworks engine is idle (e.g. the Data
+    // Console mod is running but no HTTP adapters/levers are placed in-game).
+    const unsubscribe = engine.onChange(() => sendCurrent())
+    const heartbeat = setInterval(sendCurrent, 1000)
+    socket.on('close', () => {
+      clearInterval(heartbeat)
+      unsubscribe()
     })
-    socket.on('close', unsubscribe)
   })
 
   return app

@@ -327,6 +327,29 @@ body::before {
 .production.tone-stopped .production-reason { color: var(--warning); }
 .production.tone-muted .gear { fill: var(--ink-muted); }
 
+// ─────────────────────────── Resource list expand ───────────────────────────
+
+.resource-list-scroll {
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+button.resource-more {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--water-light);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 5px 0 2px;
+  text-align: left;
+
+  &:hover { color: var(--water); text-decoration: underline; }
+  &:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 3px; }
+}
+
 // ─────────────────────────── Keyframes ───────────────────────────
 
 @keyframes tos-spin { to { transform: rotate(360deg); } }

@@ -48,12 +48,15 @@ export function App() {
       ? `TIMBERBORN API OFFLINE${snapshot?.simulated ? ' (simulator)' : ''} — showing last known state`
       : `WATERWORKS: ${MODE_LABELS[snapshot.mode] ?? snapshot.mode} · ${alarmCount === 0 ? 'ALL SYSTEMS STABLE' : `${alarmCount} ACTIVE ALARM${alarmCount > 1 ? 'S' : ''}`}`
 
-  // Motion gates: the game/gateway link is "connected" when the gateway is up and
-  // either the real game or the simulator is feeding us; "stale" when the colony
-  // feed reports stale or the game link dropped while showing last-known state.
+  // Motion gates. There are two independent live sources: the waterworks link
+  // (real game HTTP adapters or the simulator) and the Data Console colony feed.
+  // Motion should run when EITHER is live — a colony that's updating is "running"
+  // even if no waterworks adapters are placed. Stale only when the colony feed has
+  // gone stale and there's no waterworks link to fall back on.
   const gameLive = (snapshot?.connected ?? false) || (snapshot?.simulated ?? false)
-  const telemetryConnected = gatewayOnline && gameLive
-  const telemetryStale = snapshot?.colony?.status === 'stale' || (!!snapshot && !gameLive)
+  const colonyLive = snapshot?.colony?.status === 'connected'
+  const telemetryConnected = gatewayOnline && (gameLive || colonyLive)
+  const telemetryStale = snapshot?.colony?.status === 'stale' && !gameLive
 
   return (
     <MotionProvider telemetryConnected={telemetryConnected} telemetryStale={telemetryStale}>
