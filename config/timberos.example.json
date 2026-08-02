@@ -6,6 +6,12 @@
     "listLevers": "/levers",
     "setLever": "/levers/{name}/set?state={state}"
   },
+  "dataConsole": {
+    "$comment": "Optional live colony telemetry from the timberOS Data Console mod (population, resources, weather, power). If the mod isn't installed, leave this as-is — TimberOS ignores it gracefully. See https://github.com/rockmandew/timberOSDataConsole",
+    "enabled": true,
+    "url": "http://localhost:8080/timberos/v1/snapshot",
+    "pollMs": 2000
+  },
   "gateway": {
     "port": 8081,
     "pollMs": 1000,

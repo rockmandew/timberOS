@@ -51,27 +51,94 @@ The **gateway is the only thing that talks to the game** — every command sourc
 (dashboard, later Alexa/rules) funnels through one safety chokepoint. Integration
 credentials live only in the gateway, never in the browser bundle.
 
-## Quick start
+**Colony data feed (optional).** The gateway also *reads* live colony telemetry from the
+[timberOS Data Console](https://github.com/rockmandew/timberOSDataConsole) mod at
+`http://localhost:8080/timberos/v1/snapshot` when it's available — population, resources, weather,
+and power. It's read-only and never sends commands. The data is served at `GET /api/colony` and
+rides the `/api/state` payload and WebSocket snapshot under `colony`. When the mod isn't present the
+feed reports `unavailable` and everything else is unaffected. Configure it under `dataConsole` in
+`config/timberos.json` (enabled by default).
 
-```bash
+## Setup & run — start here (zero experience needed)
+
+Follow these in order, copy-pasting each command exactly. **You can run TimberOS entirely on its
+own** — a built-in simulator stands in for the game, so you can see the whole dashboard working
+before touching Timberborn.
+
+> TimberOS and the **[timberOS Data Console](https://github.com/rockmandew/timberOSDataConsole)**
+> mod are independent but better together. TimberOS runs fine without it; when the mod is installed
+> and Timberborn is running, TimberOS automatically shows your **live colony data** too (see
+> [Step 4](#step-4--optional-show-live-colony-data)).
+
+### Step 1 — Install the free tools you need (one time)
+
+1. **Node.js LTS (version 22.5 or newer)** — https://nodejs.org → click the **LTS** button, run the
+   installer, accept defaults. (TimberOS uses Node's built-in database, which needs 22.5+.)
+2. **Git** — https://git-scm.com/download/win → accept all defaults.
+
+After both finish, **close and reopen** any terminal window.
+
+### Step 2 — Download and install TimberOS
+
+Open **PowerShell** (press Start, type `PowerShell`, hit Enter) and run these one at a time:
+
+```powershell
+cd $HOME\Downloads
+git clone https://github.com/rockmandew/timberOS.git
+cd timberOS
 npm install
+```
 
-# 1. Develop with no game running — a small colony simulator drives everything:
-npm run gateway:sim      # gateway on :8081 against the simulator
-npm run dashboard        # dashboard on :3000  (open it)
+`npm install` takes a minute or two and downloads everything TimberOS needs.
 
-# 2. Against the real game — verify the API shape FIRST:
-npm run probe                 # discover Timberborn's endpoint paths & payloads
-cp config/timberos.example.json config/timberos.json
-#   …edit config/timberos.json "endpoints" to match what probe reported…
-npm run gateway
+### Step 3 — Run it (with the built-in simulator, no game required)
+
+You need **two** PowerShell windows — one for the gateway (the brain), one for the dashboard (the
+screen). In the **first** window:
+
+```powershell
+npm run gateway:sim
+```
+
+Leave that running. Open a **second** PowerShell window, `cd` back into the project, and start the
+dashboard:
+
+```powershell
+cd $HOME\Downloads\timberOS
 npm run dashboard
 ```
 
-The simulator models one water system (reservoir drains through spillway +
-irrigation, soil tracks irrigation, weather cycles wet/drought) and acknowledges
-gate commands on `STATE.*` adapters just like real in-game wiring would — enough
-to build and demo the entire supervisory loop offline.
+The dashboard prints a line like `Local:  http://localhost:3000/`. Open **http://localhost:3000** in
+your browser — that's TimberOS, fully live against the simulator. To stop either piece, click its
+window and press **Ctrl+C**.
+
+### Step 4 — (Optional) Show live colony data
+
+To replace the simulator's guesses with your **real** colony numbers (population, resources, weather,
+power):
+
+1. Install the **[timberOS Data Console](https://github.com/rockmandew/timberOSDataConsole)** mod by
+   following that project's "Setup & run" section (it's a one-command install), then launch
+   Timberborn and load a settlement.
+2. Restart TimberOS pointing at the game instead of the simulator. In your first window press
+   **Ctrl+C**, then run:
+   ```powershell
+   npm run gateway
+   ```
+   (No config editing needed — TimberOS looks for the mod at `http://localhost:8080` automatically.)
+
+The dashboard now carries your live colony data alongside the waterworks view. If the mod isn't
+running, TimberOS still works — it just marks colony data as unavailable. You can check the raw feed
+any time at **http://localhost:8081/api/colony**.
+
+> **Waterworks controls with the real game (advanced).** The floodgate/lever half of TimberOS talks
+> to Timberborn's HTTP Adapters, whose exact paths vary. Verify them first with `npm run probe`,
+> then `Copy-Item config/timberos.example.json config/timberos.json` and edit the `endpoints` block
+> to match what probe reported. The colony data feed in Step 4 needs none of this.
+
+The simulator models one water system (reservoir drains through spillway + irrigation, soil tracks
+irrigation, weather cycles wet/drought) and acknowledges gate commands on `STATE.*` adapters just
+like real in-game wiring would — enough to build and demo the entire supervisory loop offline.
 
 ## Configuration
 

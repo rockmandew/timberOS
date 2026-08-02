@@ -157,8 +157,25 @@ export interface EndpointsConfig {
   setLever: string
 }
 
+/**
+ * Optional link to the **timberOS Data Console** mod's telemetry endpoint
+ * (https://github.com/rockmandew/timberOSDataConsole). When present, TimberOS
+ * shows live colony data (population, resources, weather, power). When absent,
+ * TimberOS runs exactly as before — the feed just reports "unavailable".
+ */
+export interface DataConsoleConfig {
+  /** Poll the Data Console endpoint (default: true). Set false to ignore it entirely. */
+  enabled?: boolean
+  /** Snapshot URL served by the mod (default: http://localhost:8080/timberos/v1/snapshot). */
+  url?: string
+  /** Poll interval in ms (default: 2000, matching the mod's default cadence). */
+  pollMs?: number
+}
+
 export interface TimberOSConfig {
   endpoints: EndpointsConfig
+  /** Optional colony telemetry feed from the Data Console mod. */
+  dataConsole?: DataConsoleConfig
   gateway: {
     port: number
     /** Adapter poll interval in ms. */

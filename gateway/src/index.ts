@@ -8,8 +8,11 @@ import { type Annunciator, ConsoleAnnunciator } from './integrations/annunciator
 import { AudioAnnunciator } from './integrations/audio.js'
 import { HueAnnunciator } from './integrations/hue.js'
 import { buildServer } from './server.js'
+import { ColonyFeed } from './dataconsole/client.js'
 import { HttpTimberbornClient, type TimberbornApi } from './timberborn/client.js'
 import { SimulatedTimberborn } from './timberborn/simulator.js'
+
+const DEFAULT_DATA_CONSOLE_URL = 'http://localhost:8080/timberos/v1/snapshot'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
@@ -53,12 +56,27 @@ async function main(): Promise<void> {
   const engine = new Engine(config, api, events, annunciators)
   engine.start()
 
-  const server = await buildServer(engine)
+  // Colony telemetry from the Data Console mod (optional; graceful when absent).
+  const dc = config.dataConsole ?? {}
+  const colonyFeed = new ColonyFeed({
+    enabled: dc.enabled ?? true,
+    url: dc.url ?? DEFAULT_DATA_CONSOLE_URL,
+    pollMs: dc.pollMs ?? 2000,
+  })
+  colonyFeed.start()
+  if (dc.enabled === false) {
+    console.log('Colony feed (Data Console) disabled in config.')
+  } else {
+    console.log(`Colony feed → ${dc.url ?? DEFAULT_DATA_CONSOLE_URL} (optional; fine if the mod isn't installed)`)
+  }
+
+  const server = await buildServer(engine, colonyFeed)
   await server.listen({ port: config.gateway.port, host: '127.0.0.1' })
   console.log(`Gateway listening on http://127.0.0.1:${config.gateway.port} (REST + /ws)`)
 
   const shutdown = async (): Promise<void> => {
     engine.stop()
+    colonyFeed.stop()
     await server.close()
     events.close()
     process.exit(0)

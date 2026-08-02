@@ -1,19 +1,33 @@
 import cors from '@fastify/cors'
 import websocket from '@fastify/websocket'
 import Fastify, { type FastifyInstance } from 'fastify'
+import type { ColonyFeed } from './dataconsole/client.js'
 import type { Engine } from './engine.js'
 
 /**
  * HTTP + WebSocket surface of the gateway (localhost:8081 by default).
  * The React dashboard is the only intended client; credentials for Hue,
  * Govee and Discord never pass through here.
+ *
+ * The optional `colonyFeed` carries live colony telemetry from the Data Console
+ * mod. It rides the same `/api/state` payload and WebSocket snapshot (under
+ * `colony`) so the dashboard sees waterworks + colony state in one place.
  */
-export async function buildServer(engine: Engine): Promise<FastifyInstance> {
+export async function buildServer(engine: Engine, colonyFeed?: ColonyFeed): Promise<FastifyInstance> {
   const app = Fastify({ logger: false })
   await app.register(cors, { origin: true })
   await app.register(websocket)
 
-  app.get('/api/state', async () => engine.getSnapshot())
+  // Merge the optional colony feed into a snapshot without coupling it to the engine.
+  const withColony = (snapshot: unknown): unknown =>
+    colonyFeed ? { ...(snapshot as object), colony: colonyFeed.getState() } : snapshot
+
+  app.get('/api/state', async () => withColony(engine.getSnapshot()))
+
+  // Colony telemetry only (population, resources, weather, power) + feed status.
+  app.get('/api/colony', async () =>
+    colonyFeed?.getState() ?? { status: 'disabled', url: '', colony: null, lastUpdated: null, message: 'Colony feed not configured.' },
+  )
 
   app.get<{ Querystring: { limit?: string } }>('/api/events', async (req) => {
     const limit = Math.min(500, Number(req.query.limit ?? 100) || 100)
@@ -66,10 +80,10 @@ export async function buildServer(engine: Engine): Promise<FastifyInstance> {
   })
 
   app.get('/ws', { websocket: true }, (socket) => {
-    socket.send(JSON.stringify({ type: 'snapshot', data: engine.getSnapshot() }))
+    socket.send(JSON.stringify({ type: 'snapshot', data: withColony(engine.getSnapshot()) }))
     const unsubscribe = engine.onChange((snapshot) => {
       if (socket.readyState === socket.OPEN) {
-        socket.send(JSON.stringify({ type: 'snapshot', data: snapshot }))
+        socket.send(JSON.stringify({ type: 'snapshot', data: withColony(snapshot) }))
       }
     })
     socket.on('close', unsubscribe)

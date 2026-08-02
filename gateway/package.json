@@ -5,12 +5,15 @@
   "type": "module",
   "description": "TimberOS Gateway — bridges the Timberborn HTTP API to the dashboard, rules engine and annunciators",
   "scripts": {
-    "dev": "tsx src/index.ts",
-    "dev:sim": "tsx src/index.ts --simulate",
+    "dev": "node --experimental-sqlite --import tsx src/index.ts",
+    "dev:sim": "node --experimental-sqlite --import tsx src/index.ts --simulate",
     "probe": "tsx src/probe.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "start": "node dist/index.js"
+    "start": "node --experimental-sqlite dist/index.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
