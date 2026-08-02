@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 180" role="img" aria-label="timberOS Colony Operating System">
+<rect width="760" height="180" rx="28" fill="#23302A"/>
+<image href="timberos-mark.svg" x="22" y="15" width="150" height="150"/>
+<text x="185" y="116" fill="#F1E7D0" font-family="Segoe UI,Arial,sans-serif" font-size="76" font-weight="700" letter-spacing="-3">timber</text>
+<text x="435" y="116" fill="#C8943F" font-family="Segoe UI,Arial,sans-serif" font-size="76" font-weight="800" letter-spacing="-3">OS</text>
+<text x="188" y="148" fill="#A9B5AE" font-family="Segoe UI,Arial,sans-serif" font-size="20" letter-spacing="5">COLONY OPERATING SYSTEM</text>
+</svg>

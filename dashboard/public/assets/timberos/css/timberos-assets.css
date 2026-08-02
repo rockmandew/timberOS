@@ -1,0 +1,6 @@
+:root{--timberos-ink:#17201C;--timberos-panel:#23302A;--timberos-panel-raised:#2E3D35;--timberos-wood:#8B5E3C;--timberos-wood-light:#B47A4D;--timberos-brass:#C8943F;--timberos-water:#3B8FA3;--timberos-water-light:#72C3D4;--timberos-moss:#6F8F52;--timberos-danger:#C6533D;--timberos-warning:#D8A13B;--timberos-success:#6DA36A;--timberos-cream:#F1E7D0;--timberos-muted:#A9B5AE;--timberos-badwater:#8FB82D}
+.timberos-panel{position:relative;overflow:hidden;border:1px solid color-mix(in srgb,var(--timberos-brass) 52%,transparent);border-radius:18px;background:linear-gradient(180deg,var(--timberos-panel-raised),var(--timberos-panel));color:var(--timberos-cream)}
+.timberos-resource-icon{width:2.5rem;height:2.5rem;flex:0 0 auto}
+.timberos-pulse{animation:timberos-pulse 1.8s ease-in-out infinite}
+@keyframes timberos-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.62;transform:scale(.96)}}
+@media(prefers-reduced-motion:reduce){.timberos-pulse{animation:none!important}}

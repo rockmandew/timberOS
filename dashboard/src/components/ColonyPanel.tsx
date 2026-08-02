@@ -1,10 +1,8 @@
-import type {
-  ColonyFeedState,
-  ColonyFeedStatus,
-  ColonyPower,
-  ColonyResource,
-  ColonyWeather,
-} from '../types'
+import type { ReactNode } from 'react'
+import type { ColonyFeedState, ColonyFeedStatus, ColonyResource, ColonyWeather } from '../types'
+import { ContaminationWave } from './environment/ContaminationWave'
+import { ResourceIcon } from './icons/ResourceIcon'
+import { PowerTurbineVisual } from './power/PowerTurbineVisual'
 
 /**
  * Live colony telemetry from the timberOS Data Console mod (population,
@@ -85,6 +83,11 @@ export function ColonyPanel({ feed }: { feed: ColonyFeedState | undefined }) {
 function ColonyBody({ feed }: { feed: ColonyFeedState }) {
   const snap = feed.colony!
   const { game, population, resources, weather, power } = snap.payload
+  const stale = feed.status !== 'connected'
+  const contaminatedPct =
+    population && population.contaminatedBeavers != null && population.total > 0
+      ? (population.contaminatedBeavers / population.total) * 100
+      : null
 
   return (
     <>
@@ -101,10 +104,10 @@ function ColonyBody({ feed }: { feed: ColonyFeedState }) {
 
       {population ? (
         <div className="stat-grid">
-          <Stat label="Population" value={num(population.total)} big />
+          <Stat label="Population" value={num(population.total)} big icon={<ResourceIcon name="population" size="md" decorative />} />
           <Stat label="Adults" value={num(population.adults)} />
           <Stat label="Children" value={num(population.children)} />
-          <Stat label="Bots" value={num(population.bots)} />
+          <Stat label="Bots" value={num(population.bots)} icon={<ResourceIcon name="bots" decorative />} />
           <Stat label="Jobs (filled/open)" value={`${num(population.employed)} / ${num(population.openJobs)}`} />
           <Stat label="Beds" value={num(population.beds)} />
           {population.contaminatedBeavers !== null && population.contaminatedBeavers > 0 && (
@@ -115,7 +118,24 @@ function ColonyBody({ feed }: { feed: ColonyFeedState }) {
         <div className="unmapped">Population telemetry unavailable.</div>
       )}
 
-      {power && <PowerRow power={power} />}
+      {contaminatedPct != null && contaminatedPct > 0 && (
+        <ContaminationWave percent={contaminatedPct} label="Colony contamination" stale={stale} />
+      )}
+
+      {power && (
+        <div className="colony-power">
+          <h3 className="colony-subhead">Power</h3>
+          <PowerTurbineVisual
+            supply={power.totalSupply}
+            demand={power.totalDemand}
+            surplus={power.totalSurplus}
+            batteryCharge={power.totalBatteryCharge}
+            batteryCapacity={power.totalBatteryCapacity}
+            networksInDeficit={power.networksInDeficit}
+            stale={stale}
+          />
+        </div>
+      )}
 
       <h3 className="colony-subhead">Resources</h3>
       {resources && resources.length > 0 ? (
@@ -127,10 +147,25 @@ function ColonyBody({ feed }: { feed: ColonyFeedState }) {
   )
 }
 
-function Stat({ label, value, big, tone }: { label: string; value: string; big?: boolean; tone?: 'critical' }) {
+function Stat({
+  label,
+  value,
+  big,
+  tone,
+  icon,
+}: {
+  label: string
+  value: string
+  big?: boolean
+  tone?: 'critical'
+  icon?: ReactNode
+}) {
   return (
     <div className={`stat${big ? ' stat-big' : ''}${tone ? ` ${tone}` : ''}`}>
-      <div className="stat-value">{value}</div>
+      <div className="stat-value">
+        {icon}
+        {value}
+      </div>
       <div className="stat-label">{label}</div>
     </div>
   )
@@ -156,26 +191,6 @@ function WeatherBadge({ weather }: { weather: ColonyWeather }) {
   )
 }
 
-function PowerRow({ power }: { power: ColonyPower }) {
-  const surplus = power.totalSurplus
-  const tone = surplus < 0 ? 'critical' : undefined
-  const battLabel =
-    power.totalBatteryCapacity > 0
-      ? `${num(power.totalBatteryCharge)} / ${num(power.totalBatteryCapacity)} hp·h`
-      : '—'
-  return (
-    <div className="stat-grid power-grid">
-      <Stat label="Power supply" value={`${num(power.totalSupply)} hp`} />
-      <Stat label="Power demand" value={`${num(power.totalDemand)} hp`} />
-      <Stat label="Surplus" value={`${surplus >= 0 ? '+' : ''}${num(surplus)} hp`} tone={tone} />
-      <Stat label="Batteries" value={battLabel} />
-      {power.networksInDeficit > 0 && (
-        <Stat label="Networks in deficit" value={num(power.networksInDeficit)} tone="critical" />
-      )}
-    </div>
-  )
-}
-
 function ResourceList({ resources }: { resources: ColonyResource[] }) {
   const sorted = [...resources].sort((a, b) => b.amount - a.amount)
   const shown = sorted.slice(0, MAX_RESOURCES)
@@ -188,7 +203,9 @@ function ResourceList({ resources }: { resources: ColonyResource[] }) {
         const near = frac !== null && frac >= 0.92
         return (
           <div className="resource-row" key={r.goodId}>
-            <span className="resource-name">{r.goodId}</span>
+            <span className="resource-name">
+              <ResourceIcon good={r.goodId} decorative /> {r.goodId}
+            </span>
             <span className="resource-bar" aria-hidden="true">
               <span
                 className={`resource-fill${near ? ' near-full' : ''}`}

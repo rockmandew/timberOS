@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 260" role="img" aria-label="Badwater contamination wave">
+<rect width="800" height="260" rx="32" fill="#23302A"/><g id="waves" fill="none" stroke-linecap="round">
+<path d="M-80 120c80-60 160 60 240 0s160 60 240 0 160 60 240 0 160 60 240 0" stroke="#8FB82D" stroke-width="18"/>
+<path d="M-40 180c80-45 160 45 240 0s160 45 240 0 160 45 240 0 160 45 240 0" stroke="#3B8FA3" stroke-width="13" opacity=".8"/></g>
+<text x="44" y="52" fill="#F1E7D0" font-family="Segoe UI,Arial,sans-serif" font-size="28" font-weight="800">CONTAMINATION FRONT</text>
+<style>#waves{animation:drift 4s linear infinite}@keyframes drift{to{transform:translateX(160px)}}@media(prefers-reduced-motion:reduce){#waves{animation:none}}</style></svg>

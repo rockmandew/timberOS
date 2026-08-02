@@ -1,0 +1,47 @@
+// Hybrid "brand-only" palette.
+//
+// We adopt the asset kit's BRAND colors — brass, wood tones, and a teal water —
+// but deliberately KEEP the dashboard's original, CVD-validated encodings for
+// state: purple for contamination (so green "healthy" and contamination never
+// collide for red-green colour blindness), plus the existing good/warning/critical.
+//
+// These :root rules load AFTER theme.css, so they override the base tokens. The
+// --timberos-* aliases let the kit's own CSS / any kit-authored markup resolve to
+// our themed values — crucially remapping the kit's GREEN badwater to our purple.
+
+:root {
+  // --- Brand (from the asset kit) ---
+  --brass: #c8943f;
+  --brass-dim: #8a6b22;
+
+  // Water systems use the kit's teal (was blue #3e87c4).
+  --water: #3b8fa3;
+  --water-light: #72c3d4;
+
+  // Wood tones for construction / production highlights.
+  --wood: #8b5e3c;
+  --wood-light: #b47a4d;
+
+  // --- State encodings (unchanged, validated) ---
+  // --good, --warning, --critical inherited from theme.css.
+  // Contamination stays PURPLE (never green) for CVD safety.
+  --contaminated: #a06fd6;
+
+  // --- Kit alias layer: map --timberos-* onto our themed tokens ---
+  --timberos-ink: var(--surface);
+  --timberos-panel: var(--panel);
+  --timberos-panel-raised: var(--panel-raised);
+  --timberos-wood: var(--wood);
+  --timberos-wood-light: var(--wood-light);
+  --timberos-brass: var(--brass);
+  --timberos-water: var(--water);
+  --timberos-water-light: var(--water-light);
+  --timberos-moss: var(--good);
+  --timberos-danger: var(--critical);
+  --timberos-warning: var(--warning);
+  --timberos-success: var(--good);
+  --timberos-cream: var(--ink);
+  --timberos-muted: var(--ink-secondary);
+  // Remap: the kit's green badwater becomes our purple contamination.
+  --timberos-badwater: var(--contaminated);
+}

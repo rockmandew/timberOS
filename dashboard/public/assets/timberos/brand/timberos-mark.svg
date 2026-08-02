@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="t d">
+<title id="t">timberOS mark</title><desc id="d">Beaver-engineered shield with water and gear symbols.</desc>
+<path d="M128 14 222 52v75c0 60-37 97-94 115C71 224 34 187 34 127V52z" fill="#23302A" stroke="#C8943F" stroke-width="10"/>
+<path d="M78 59h100l-14 32H92z" fill="#B47A4D" stroke="#17201C" stroke-width="6"/>
+<rect x="68" y="101" width="120" height="50" rx="16" fill="#3B8FA3" stroke="#17201C" stroke-width="6"/>
+<path d="M74 122c18-14 36 14 54 0s36 14 54 0" fill="none" stroke="#72C3D4" stroke-width="10" stroke-linecap="round"/>
+<g transform="translate(128 176)" fill="#C8943F" stroke="#17201C" stroke-width="6">
+<circle r="34"/><circle r="13" fill="#23302A"/>
+<path d="M-6-47h12v20H-6zM-6 27h12v20H-6zM-47-6h20V6h-20zM27-6h20V6H27z"/>
+</g></svg>

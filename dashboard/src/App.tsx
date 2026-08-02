@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AudioCues } from './audio'
 import { AlarmPanel } from './components/AlarmPanel'
-import { BandGauge } from './components/BandGauge'
 import { ColonyPanel } from './components/ColonyPanel'
 import { ConfigHealth } from './components/ConfigHealth'
 import { ContaminationMap } from './components/ContaminationMap'
@@ -11,8 +10,12 @@ import { GateControl } from './components/GateControl'
 import { IntegrationsPanel } from './components/IntegrationsPanel'
 import { ModeSelector } from './components/ModeSelector'
 import { TrendChart } from './components/TrendChart'
+import { TimberOSLogo } from './components/brand/TimberOSLogo'
+import { MotionProvider } from './components/motion/MotionProvider'
+import { SystemStatusBadge, type SystemStatus } from './components/status/SystemStatusBadge'
+import { ReservoirVisual } from './components/water/ReservoirVisual'
 import { useTimberOS } from './store'
-import type { Snapshot } from './types'
+import type { BandSensor, Snapshot } from './types'
 
 const MODE_LABELS: Record<string, string> = {
   normal: 'NORMAL',
@@ -45,10 +48,17 @@ export function App() {
       ? `TIMBERBORN API OFFLINE${snapshot?.simulated ? ' (simulator)' : ''} — showing last known state`
       : `WATERWORKS: ${MODE_LABELS[snapshot.mode] ?? snapshot.mode} · ${alarmCount === 0 ? 'ALL SYSTEMS STABLE' : `${alarmCount} ACTIVE ALARM${alarmCount > 1 ? 'S' : ''}`}`
 
+  // Motion gates: the game/gateway link is "connected" when the gateway is up and
+  // either the real game or the simulator is feeding us; "stale" when the colony
+  // feed reports stale or the game link dropped while showing last-known state.
+  const gameLive = (snapshot?.connected ?? false) || (snapshot?.simulated ?? false)
+  const telemetryConnected = gatewayOnline && gameLive
+  const telemetryStale = snapshot?.colony?.status === 'stale' || (!!snapshot && !gameLive)
+
   return (
-    <>
+    <MotionProvider telemetryConnected={telemetryConnected} telemetryStale={telemetryStale}>
       <header className="masthead">
-        <span className="wordmark">TimberOS</span>
+        <TimberOSLogo variant="wordmark" />
         <span className="headline">{headline}</span>
         <ConnectionChip online={gatewayOnline} gameConnected={snapshot?.connected ?? false} simulated={snapshot?.simulated ?? false} />
       </header>
@@ -61,9 +71,11 @@ export function App() {
 
         <section className="panel">
           <h2>Reservoirs &amp; Sensors</h2>
-          <div>
+          <div className="panel-body">
             {snapshot && snapshot.sensors.length > 0 ? (
-              snapshot.sensors.map((sensor) => <BandGauge key={sensor.id} sensor={sensor} />)
+              snapshot.sensors.map((sensor) => (
+                <ReservoirVisual key={sensor.id} {...reservoirFromSensor(sensor, gameLive)} />
+              ))
             ) : (
               <div className="unmapped">No band sensors discovered. Place GT_* HTTP adapters in the save.</div>
             )}
@@ -157,8 +169,27 @@ export function App() {
           {lastCommand.ok ? '✓' : '⚠'} {lastCommand.message}
         </div>
       )}
-    </>
+    </MotionProvider>
   )
+}
+
+/**
+ * Map a boolean-band water sensor to the ReservoirVisual props. Fraction → fill%
+ * (null stays unknown, never 0); a low level reads as warning/critical; a faulted
+ * sensor is unknown; the game link being down marks it stale.
+ */
+function reservoirFromSensor(sensor: BandSensor, gameLive: boolean) {
+  const fillPercent = sensor.fraction == null ? null : Math.round(sensor.fraction * 100)
+  const trend = sensor.trend === 'unknown' ? undefined : sensor.trend
+  const status: 'healthy' | 'warning' | 'critical' | 'unknown' =
+    sensor.fault || fillPercent == null
+      ? 'unknown'
+      : fillPercent <= 15
+        ? 'critical'
+        : fillPercent <= 35
+          ? 'warning'
+          : 'healthy'
+  return { name: sensor.label, fillPercent, trend, status, stale: !gameLive }
 }
 
 /**
@@ -191,8 +222,17 @@ function useAudioCues(snapshot: Snapshot | null) {
 }
 
 function ConnectionChip({ online, gameConnected, simulated }: { online: boolean; gameConnected: boolean; simulated: boolean }) {
-  if (!online) return <span className="chip offline">gateway offline</span>
-  if (simulated) return <span className="chip water">simulator</span>
-  if (!gameConnected) return <span className="chip warning">game offline</span>
-  return <span className="chip good">connected</span>
+  const [status, label, reconnecting]: [SystemStatus, string, boolean] = !online
+    ? ['offline', 'Gateway offline', true]
+    : simulated
+      ? ['healthy', 'Simulator', false]
+      : !gameConnected
+        ? ['warning', 'Game offline', false]
+        : ['healthy', 'Connected', false]
+  return (
+    <span className="conn-indicator">
+      <TimberOSLogo variant="mark" size="sm" />
+      <SystemStatusBadge status={status} label={label} reconnecting={reconnecting} />
+    </span>
+  )
 }

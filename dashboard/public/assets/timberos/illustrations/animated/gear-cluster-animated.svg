@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Production gear cluster">
+<rect width="640" height="360" rx="34" fill="#23302A"/>
+<g fill="#C8943F" stroke="#17201C" stroke-width="8">
+<g id="g1" transform="translate(220 180)"><circle r="74"/><circle r="26" fill="#23302A"/><path d="M-10-102h20v32h-20zM-10 70h20v32h-20zM-102-10h32v20h-32zM70-10h32v20H70z"/></g>
+<g id="g2" transform="translate(386 196)"><circle r="52" fill="#B47A4D"/><circle r="18" fill="#23302A"/><path d="M-8-75h16v24H-8zM-8 51h16v24H-8zM-75-8h24v16h-24zM51-8h24v16H51z"/></g></g>
+<text x="64" y="72" fill="#F1E7D0" font-family="Segoe UI,Arial,sans-serif" font-size="30" font-weight="700">PRODUCTION CHAIN ACTIVE</text>
+<style>#g1{animation:cw 7s linear infinite;transform-origin:220px 180px}#g2{animation:ccw 5s linear infinite;transform-origin:386px 196px}@keyframes cw{to{transform:rotate(360deg)}}@keyframes ccw{to{transform:rotate(-360deg)}}@media(prefers-reduced-motion:reduce){#g1,#g2{animation:none}}</style></svg>

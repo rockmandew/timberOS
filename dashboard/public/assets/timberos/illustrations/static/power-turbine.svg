@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="Power turbine">
+<rect width="420" height="420" rx="52" fill="#23302A"/><circle cx="210" cy="210" r="128" fill="#2E3D35" stroke="#C8943F" stroke-width="12"/>
+<g id="rotor" transform="translate(210 210)" fill="#C8943F" stroke="#17201C" stroke-width="8">
+<circle r="58"/><circle r="20" fill="#23302A"/>
+<path d="M-24-46V-132H24v86zM-24 46V132H24V46zM-46-24H-132V24h86zM46-24H132V24H46z" fill="#B47A4D"/></g>
+<path d="M58 326c55-38 96 36 151 0s96 36 151 0" fill="none" stroke="#72C3D4" stroke-width="15" stroke-linecap="round"/>
+<text x="210" y="386" fill="#F1E7D0" font-family="Segoe UI,Arial,sans-serif" font-size="26" text-anchor="middle" font-weight="700">POWER NETWORK</text></svg>

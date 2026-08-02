@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" role="img" aria-label="Reservoir telemetry">
+<rect width="800" height="360" rx="36" fill="#23302A"/>
+<rect x="86" y="45" width="628" height="270" rx="34" fill="#8B5E3C" stroke="#C8943F" stroke-width="12"/>
+<rect x="128" y="82" width="544" height="198" rx="22" fill="#17201C" stroke="#F1E7D0" stroke-width="5"/>
+<clipPath id="tank"><rect x="136" y="90" width="528" height="182" rx="15"/></clipPath>
+<g clip-path="url(#tank)" id="water-level"><rect x="136" y="142" width="528" height="130" fill="#3B8FA3"/>
+<path id="wave" d="M110 151c45-30 90 30 135 0s90 30 135 0 90 30 135 0 90 30 135 0 90 30 135 0" fill="none" stroke="#72C3D4" stroke-width="13"/></g>
+<text x="154" y="128" fill="#F1E7D0" font-family="Segoe UI,Arial,sans-serif" font-size="28" font-weight="700">RESERVOIR A</text>
+<text x="512" y="240" fill="#F1E7D0" font-family="Segoe UI,Arial,sans-serif" font-size="62" font-weight="800">72%</text></svg>

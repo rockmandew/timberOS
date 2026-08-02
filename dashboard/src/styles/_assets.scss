@@ -1,0 +1,318 @@
+// timberOS asset-kit component styles (authored in SCSS, compiled by Vite).
+//
+// Motion policy: every animation here is gated by the `motion-off` class that
+// MotionProvider puts on <html> when motion should stop (reduced-motion, motion
+// disabled, game paused, telemetry stale, or tab hidden), AND by the OS
+// prefers-reduced-motion query as a hard backstop. Prefer transform/opacity only.
+
+// ─────────────────────────── Branding & shell ───────────────────────────
+
+.brand-logo {
+  display: block;
+  height: 30px;
+  width: auto;
+
+  &.brand-mark { height: 26px; }
+  &.brand-lg { height: 40px; }
+  &.brand-sm { height: 20px; }
+}
+
+.conn-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// Wood-grid pattern, very low opacity, behind the whole dashboard. Decorative only.
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: url('/assets/timberos/patterns/wood-grid-pattern.svg');
+  background-size: 360px;
+  opacity: 0.04;
+  pointer-events: none;
+}
+
+// Pipe divider between major operational sections only.
+.pipe-divider {
+  grid-column: 1 / -1;
+  height: 14px;
+  margin: 2px 0;
+  background: url('/assets/timberos/ui/pipe-divider.svg') left center / auto 14px repeat-x;
+  opacity: 0.5;
+  border: none;
+}
+
+// ─────────────────────────── Panel header (title + aside) ───────────────────────────
+
+.panel > h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.panel-aside {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+// ─────────────────────────── Resource icons ───────────────────────────
+
+.resource-icon {
+  width: 1.15em;
+  height: 1.15em;
+  flex: 0 0 auto;
+  vertical-align: -0.2em;
+  object-fit: contain;
+
+  &.ri-lg { width: 2.25rem; height: 2.25rem; }
+  &.ri-md { width: 1.5rem; height: 1.5rem; }
+}
+
+.resource-icon-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--panel-raised);
+  color: var(--ink-secondary);
+  font-size: 0.72em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+// Kit pulse utility (bundled here rather than importing the kit CSS at runtime).
+.timberos-pulse { animation: timberos-pulse 1.8s ease-in-out infinite; }
+@keyframes timberos-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+// ─────────────────────────── System status badge ───────────────────────────
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  background: var(--panel-raised);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+
+  .status-badge-icon { width: 14px; height: 14px; flex: none; }
+  .status-badge-text { white-space: nowrap; }
+
+  &.healthy { border-color: color-mix(in srgb, var(--good) 55%, var(--line)); }
+  &.warning { border-color: color-mix(in srgb, var(--warning) 60%, var(--line)); }
+  &.critical { border-color: color-mix(in srgb, var(--critical) 65%, var(--line)); }
+  &.offline,
+  &.unknown { color: var(--ink-secondary); }
+}
+
+// ─────────────────────────── Reservoir visual ───────────────────────────
+
+.reservoir {
+  margin: 0 0 10px;
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.reservoir-tank {
+  position: relative;
+  height: 92px;
+  border-radius: 10px;
+  border: 2px solid var(--brass);
+  background: var(--surface);
+  overflow: hidden;
+
+  // Critical state: whole tank pulses (gated by motion + reduced-motion).
+  &.is-critical { animation: tos-tank-pulse 1.4s ease-in-out infinite; }
+}
+
+// Water body: height is driven by inline --fill (0–100%). Height animates.
+.reservoir-water {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: var(--fill, 0%);
+  background: linear-gradient(180deg, var(--water-light), var(--water));
+  transition: height 0.7s ease;
+
+  &.status-warning { background: linear-gradient(180deg, color-mix(in srgb, var(--warning) 60%, var(--water-light)), var(--water)); }
+  &.status-critical { background: linear-gradient(180deg, color-mix(in srgb, var(--critical) 55%, var(--water-light)), var(--water)); }
+}
+
+// Surface shimmer — only present when .is-animated is set by the component.
+.reservoir-wave {
+  position: absolute;
+  inset: 0 -20% auto -20%;
+  top: -6px;
+  height: 10px;
+  background: repeating-linear-gradient(90deg,
+    transparent 0, var(--water-light) 8px, transparent 16px, transparent 24px);
+  opacity: 0.55;
+}
+
+.reservoir-water.is-animated .reservoir-wave { animation: tos-wave 2.4s linear infinite; }
+
+// Contamination layer (purple) — only rendered when a real value exists.
+.reservoir-contam {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: var(--contam, 0%);
+  background: repeating-linear-gradient(45deg,
+    color-mix(in srgb, var(--contaminated) 55%, transparent) 0 6px,
+    color-mix(in srgb, var(--contaminated) 30%, transparent) 6px 12px);
+  border-top: 2px solid var(--contaminated);
+  pointer-events: none;
+}
+
+.reservoir-unknown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.reservoir-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.reservoir-name { color: var(--ink); }
+.reservoir-read { color: var(--ink); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.reservoir-sub { color: var(--ink-secondary); font-size: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.reservoir.is-stale { opacity: 0.72; }
+
+// ─────────────────────────── Power turbine ───────────────────────────
+
+.turbine {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.turbine-svg {
+  width: 96px;
+  height: 96px;
+  display: block;
+
+  .turbine-rotor {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  &.is-spinning .turbine-rotor {
+    animation: tos-spin var(--rotor-duration, 6s) linear infinite;
+  }
+
+  .turbine-ring { fill: var(--panel-raised); stroke: var(--brass); }
+  .turbine-blade { fill: var(--wood-light); }
+  .turbine-hub { fill: var(--brass); }
+
+  &.state-warning .turbine-ring { stroke: var(--warning); }
+  &.state-critical .turbine-ring { stroke: var(--critical); }
+}
+
+.turbine-info { display: flex; flex-direction: column; gap: 4px; }
+.turbine-figures { display: flex; gap: 12px; flex-wrap: wrap; font-variant-numeric: tabular-nums; }
+.turbine-fig { display: flex; flex-direction: column; }
+.turbine-fig-val { color: var(--ink); font-size: 15px; font-weight: 600; }
+.turbine-fig-val.deficit { color: var(--critical); }
+.turbine-fig-val.tight { color: var(--warning); }
+.turbine-fig-label { color: var(--ink-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+.turbine-battery { font-size: 12px; color: var(--ink-secondary); }
+
+// ─────────────────────────── Contamination wave ───────────────────────────
+
+.contam {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contam-svg {
+  width: 100%;
+  height: 52px;
+  display: block;
+  background: #140f09;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+
+  .contam-wave-path { stroke: var(--contaminated); }
+  .contam-wave-back { stroke: var(--water); opacity: 0.55; }
+
+  &.is-animated .contam-waves { animation: tos-drift var(--drift, 5s) linear infinite; }
+
+  &.sev-critical {
+    border-color: var(--contaminated);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--contaminated) 45%, transparent);
+  }
+}
+
+.contam-readout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink-secondary);
+
+  strong { color: var(--contaminated); font-variant-numeric: tabular-nums; }
+  &.is-critical strong { color: var(--critical); }
+}
+
+// ─────────────────────────── Colony panel additions ───────────────────────────
+
+.stat-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.colony-power {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+// ─────────────────────────── Keyframes ───────────────────────────
+
+@keyframes tos-spin { to { transform: rotate(360deg); } }
+@keyframes tos-wave { to { transform: translateX(24px); } }
+@keyframes tos-drift { to { transform: translateX(160px); } }
+@keyframes tos-tank-pulse { 50% { box-shadow: inset 0 0 0 2px var(--critical); } }
+
+// ─────────────────────────── Motion master switch ───────────────────────────
+// MotionProvider adds .motion-off to <html> for the HARD cases only — the OS
+// prefers-reduced-motion setting or the operator disabling dashboard motion. That
+// stops every animation, including functional alert pulses (no flashing for
+// reduced-motion users). Softer cases (game paused, telemetry stale, tab hidden)
+// are handled per-component: the visual simply doesn't add its `is-animated`
+// class, so decorative/telemetry motion stops while alert pulses keep running.
+
+html.motion-off *,
+html.motion-off *::before,
+html.motion-off *::after {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reservoir-water.is-animated .reservoir-wave,
+  .turbine-svg.is-spinning .turbine-rotor,
+  .contam-svg.is-animated .contam-waves,
+  .reservoir-tank.is-critical {
+    animation: none !important;
+  }
+}
