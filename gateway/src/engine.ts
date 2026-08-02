@@ -96,6 +96,11 @@ export class Engine {
     if (this.timer) clearInterval(this.timer)
   }
 
+  /** Force an immediate read of the game's adapters/levers (the Wiring panel's Scan). */
+  async forcePoll(): Promise<void> {
+    await this.poll()
+  }
+
   onChange(listener: (snapshot: Snapshot) => void): () => void {
     this.listeners.add(listener)
     return () => this.listeners.delete(listener)

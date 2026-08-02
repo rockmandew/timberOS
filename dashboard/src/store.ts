@@ -19,6 +19,7 @@ interface TimberOSStore {
   refreshEvents(): Promise<void>
   refreshTrends(): Promise<void>
   fetchWiring(): Promise<void>
+  scanDevices(): Promise<void>
   saveWiring(registry: DeviceRegistry): Promise<CommandResult>
   commandGate(gateId: string, position: number | 'OPEN' | 'CLOSED', confirm?: boolean): Promise<CommandResult>
   setMode(mode: string): Promise<CommandResult>
@@ -80,6 +81,15 @@ export const useTimberOS = create<TimberOSStore>((set, get) => ({
       if (discRes.ok) set({ discovery: (await discRes.json()) as Discovery })
     } catch {
       // Gateway offline — the Wiring panel shows its last-known state.
+    }
+  },
+
+  async scanDevices() {
+    try {
+      const res = await fetch('/api/discovery/scan', { method: 'POST' })
+      if (res.ok) set({ discovery: (await res.json()) as Discovery })
+    } catch {
+      // Gateway offline — Scan simply does nothing; the panel keeps last-known devices.
     }
   },
 

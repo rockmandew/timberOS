@@ -48,6 +48,12 @@ export async function buildServer(
 
   app.get('/api/discovery', async () => engine.getDiscovery())
 
+  // Force a fresh read of the game's adapters/levers (the Wiring panel's Scan button).
+  app.post('/api/discovery/scan', async () => {
+    await engine.forcePoll()
+    return engine.getDiscovery()
+  })
+
   app.put('/api/devices', async (req) => {
     const registry = normalizeRegistry(req.body as Parameters<typeof normalizeRegistry>[0])
     engine.setRegistry(registry)
