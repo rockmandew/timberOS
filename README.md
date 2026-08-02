@@ -55,9 +55,11 @@ credentials live only in the gateway, never in the browser bundle.
 [timberOS Data Console](https://github.com/rockmandew/timberOSDataConsole) mod at
 `http://localhost:8080/timberos/v1/snapshot` when it's available — population, resources, weather,
 and power. It's read-only and never sends commands. The data is served at `GET /api/colony` and
-rides the `/api/state` payload and WebSocket snapshot under `colony`. When the mod isn't present the
-feed reports `unavailable` and everything else is unaffected. Configure it under `dataConsole` in
-`config/timberos.json` (enabled by default).
+rides the `/api/state` payload and WebSocket snapshot under `colony`, and the dashboard shows it in
+a **Colony — Live Telemetry** panel (settlement/faction/cycle, a weather badge with the drought/
+badtide countdown, population stat tiles, power supply/demand/battery, and resource stock bars).
+When the mod isn't present the panel says so and everything else is unaffected. Configure it under
+`dataConsole` in `config/timberos.json` (enabled by default).
 
 ## Setup & run — start here (zero experience needed)
 

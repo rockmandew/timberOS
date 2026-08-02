@@ -704,3 +704,53 @@ body {
   font-size: 10px;
   margin-top: 2px;
 }
+
+/* --- Colony panel (live telemetry from the Data Console mod) --- */
+.colony-panel { grid-column: span 2; }
+
+.panel-body.colony { display: flex; flex-direction: column; gap: 12px; }
+
+.colony-status { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.colony-status-msg { color: var(--ink-secondary); font-size: 12px; }
+
+.colony-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding-bottom: 8px; border-bottom: 1px solid var(--line);
+}
+.colony-settlement { color: var(--ink); font-weight: 600; font-size: 15px; letter-spacing: 0.02em; }
+.colony-time { color: var(--ink-secondary); font-size: 12px; }
+.colony-subhead {
+  margin: 2px 0 0; color: var(--ink-muted); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.14em; font-weight: 600;
+}
+
+.stat-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px;
+}
+.power-grid { border-top: 1px solid var(--line); padding-top: 12px; }
+
+.stat {
+  background: var(--panel-raised); border: 1px solid var(--line);
+  border-radius: 4px; padding: 8px 10px;
+}
+.stat-value { color: var(--ink); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat-big .stat-value { color: var(--brass); font-size: 24px; }
+.stat-label {
+  color: var(--ink-muted); font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.1em; margin-top: 2px;
+}
+.stat.critical { border-color: var(--critical); }
+.stat.critical .stat-value { color: var(--critical); }
+
+.resource-list { display: flex; flex-direction: column; gap: 5px; }
+.resource-row { display: grid; grid-template-columns: 120px 1fr auto; align-items: center; gap: 10px; }
+.resource-name { color: var(--ink-secondary); font-size: 12px; }
+.resource-bar {
+  height: 8px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 3px; overflow: hidden;
+}
+.resource-fill { display: block; height: 100%; background: var(--good); transition: width 0.4s ease; }
+.resource-fill.near-full { background: var(--warning); }
+.resource-amount { color: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.resource-cap { color: var(--ink-muted); }
+.resource-more { color: var(--ink-muted); font-size: 11px; padding-top: 2px; }

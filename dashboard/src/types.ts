@@ -114,6 +114,96 @@ export interface TrendSeries {
   samples: TrendSample[]
 }
 
+/* --- Colony feed (from the timberOS Data Console mod, via GET /api/colony) --- */
+
+export type ColonyFeedStatus = 'connected' | 'stale' | 'unavailable' | 'disabled'
+
+export interface ColonyGameState {
+  gameVersion: string | null
+  modVersion: string
+  factionId: string | null
+  settlementName: string | null
+}
+
+export interface ColonyPopulation {
+  total: number
+  beavers: number
+  adults: number
+  children: number
+  bots: number
+  employed: number | null
+  openJobs: number | null
+  beds: number | null
+  contaminatedBeavers: number | null
+}
+
+export interface ColonyResource {
+  goodId: string
+  amount: number
+  capacity: number
+}
+
+export interface ColonyWeather {
+  isHazardous: boolean
+  hazardId: string | null
+  temperateDurationDays: number
+  hazardDurationDays: number
+  daysUntilHazard: number | null
+  hazardDaysRemaining: number | null
+}
+
+export interface ColonyPowerNetwork {
+  index: number
+  supply: number
+  demand: number
+  surplus: number
+  batteryCharge: number
+  batteryCapacity: number
+  generators: number
+  powered: boolean
+}
+
+export interface ColonyPower {
+  networkCount: number
+  totalSupply: number
+  totalDemand: number
+  totalSurplus: number
+  totalBatteryCharge: number
+  totalBatteryCapacity: number
+  networksInDeficit: number
+  networks: ColonyPowerNetwork[]
+}
+
+export interface ColonyGameTime {
+  cycle: number
+  cycleDay: number
+  partialCycleDay: number
+}
+
+export interface ColonySnapshot {
+  schemaVersion: string
+  settlementId: string | null
+  sequence: number
+  capturedAt: string
+  gameTime: ColonyGameTime | null
+  payload: {
+    game: ColonyGameState | null
+    population: ColonyPopulation | null
+    resources: ColonyResource[] | null
+    weather: ColonyWeather | null
+    power: ColonyPower | null
+    collectors: Array<{ name: string; status: string; error: string | null }>
+  }
+}
+
+export interface ColonyFeedState {
+  status: ColonyFeedStatus
+  url: string
+  colony: ColonySnapshot | null
+  lastUpdated: number | null
+  message: string | null
+}
+
 export interface Snapshot {
   connected: boolean
   simulated: boolean
@@ -127,6 +217,8 @@ export interface Snapshot {
   insights: RelationshipInsight[]
   network: NetworkView | null
   integrations: IntegrationState[]
+  /** Live colony telemetry from the Data Console mod, or undefined if the feed is off. */
+  colony?: ColonyFeedState
   updatedAt: number
 }
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { AudioCues } from './audio'
 import { AlarmPanel } from './components/AlarmPanel'
 import { BandGauge } from './components/BandGauge'
+import { ColonyPanel } from './components/ColonyPanel'
 import { ConfigHealth } from './components/ConfigHealth'
 import { ContaminationMap } from './components/ContaminationMap'
 import { Diagnostics } from './components/Diagnostics'
@@ -53,6 +54,11 @@ export function App() {
       </header>
 
       <div className="grid">
+        <section className="panel colony-panel span-rows">
+          <h2>Colony — Live Telemetry</h2>
+          <ColonyPanel feed={snapshot?.colony} />
+        </section>
+
         <section className="panel">
           <h2>Reservoirs &amp; Sensors</h2>
           <div>
