@@ -2,6 +2,7 @@ import cors from '@fastify/cors'
 import websocket from '@fastify/websocket'
 import Fastify, { type FastifyInstance } from 'fastify'
 import type { ColonyFeed } from './dataconsole/client.js'
+import { normalizeRegistry, saveRegistry } from './devices/registry.js'
 import type { Engine } from './engine.js'
 
 /**
@@ -13,7 +14,11 @@ import type { Engine } from './engine.js'
  * mod. It rides the same `/api/state` payload and WebSocket snapshot (under
  * `colony`) so the dashboard sees waterworks + colony state in one place.
  */
-export async function buildServer(engine: Engine, colonyFeed?: ColonyFeed): Promise<FastifyInstance> {
+export async function buildServer(
+  engine: Engine,
+  colonyFeed?: ColonyFeed,
+  devicesPath?: string,
+): Promise<FastifyInstance> {
   const app = Fastify({ logger: false })
   await app.register(cors, { origin: true })
   await app.register(websocket)
@@ -35,6 +40,26 @@ export async function buildServer(engine: Engine, colonyFeed?: ColonyFeed): Prom
   })
 
   app.get('/api/lint', async () => engine.getLint())
+
+  // ── Device registry (the dashboard Wiring panel) ──────────────────────
+  // GET current registry; GET raw discovered devices for the picker; PUT to
+  // replace the whole registry (applied live + persisted to config/devices.json).
+  app.get('/api/devices', async () => engine.getRegistry())
+
+  app.get('/api/discovery', async () => engine.getDiscovery())
+
+  app.put('/api/devices', async (req) => {
+    const registry = normalizeRegistry(req.body as Parameters<typeof normalizeRegistry>[0])
+    engine.setRegistry(registry)
+    if (devicesPath) {
+      try {
+        saveRegistry(devicesPath, registry)
+      } catch (err) {
+        return { ok: false, message: err instanceof Error ? err.message : 'Failed to persist devices', registry }
+      }
+    }
+    return { ok: true, registry }
+  })
 
   app.get('/api/integrations', async () => engine.getIntegrations())
 

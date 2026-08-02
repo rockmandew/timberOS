@@ -10,6 +10,12 @@ export interface TimberbornApi {
   listAdapters(): Promise<SignalReading[]>
   listLevers(): Promise<SignalReading[]>
   setLever(name: string, state: boolean): Promise<void>
+  /**
+   * Drive an HTTP Lever by its exact in-game name via the game's real endpoints
+   * (/api/switch-on|switch-off/{name}). This is how registered gate devices are
+   * commanded — the game exposes two GET URLs, not a single templated setter.
+   */
+  switchLever(name: string, state: boolean, method?: 'GET' | 'POST'): Promise<void>
   ping(): Promise<boolean>
 }
 
@@ -42,6 +48,15 @@ export class HttpTimberbornClient implements TimberbornApi {
     const res = await fetch(new URL(path, this.endpoints.baseUrl), { method: 'POST' })
     if (!res.ok) {
       throw new Error(`setLever(${name}, ${state}) → HTTP ${res.status}`)
+    }
+  }
+
+  async switchLever(name: string, state: boolean, method: 'GET' | 'POST' = 'GET'): Promise<void> {
+    const verb = state ? 'switch-on' : 'switch-off'
+    const path = `/api/${verb}/${encodeURIComponent(name)}`
+    const res = await fetch(new URL(path, this.endpoints.baseUrl), { method })
+    if (!res.ok) {
+      throw new Error(`switchLever(${name}, ${state}) → HTTP ${res.status}`)
     }
   }
 

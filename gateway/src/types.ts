@@ -72,6 +72,14 @@ export interface RawSignal {
   kind: 'adapter' | 'lever'
 }
 
+/** A user-registered plain boolean signal (an HTTP Adapter given a nickname). */
+export interface NamedSignal {
+  id: string
+  label: string
+  state: boolean
+  updatedAt: number
+}
+
 export type LintSeverity = 'error' | 'warning' | 'info'
 
 /**
@@ -181,6 +189,8 @@ export interface Snapshot {
   sensors: BandSensor[]
   gates: GateState[]
   alarms: Alarm[]
+  /** User-registered plain boolean signals (nicknamed HTTP Adapters). */
+  signals: NamedSignal[]
   unmapped: RawSignal[]
   /** Config-vs-save wiring findings (recomputed when the discovered signal set changes). */
   lint: LintFinding[]

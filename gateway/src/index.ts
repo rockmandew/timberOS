@@ -1,6 +1,7 @@
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadConfig } from './config.js'
+import { loadRegistry } from './devices/registry.js'
 import { Engine } from './engine.js'
 import { EventStore } from './events.js'
 import { loadEnv } from './env.js'
@@ -53,7 +54,17 @@ async function main(): Promise<void> {
   }
 
   const events = new EventStore(resolve(HERE, '../..', config.gateway.eventStore))
-  const engine = new Engine(config, api, events, annunciators)
+
+  // User device registry (the in-app Wiring panel) — persisted, edited at runtime.
+  const devicesPath = resolve(HERE, '../..', 'config/devices.json')
+  const registry = loadRegistry(devicesPath)
+  const deviceCount = registry.gates.length + registry.signals.length + registry.reservoirs.length
+  console.log(
+    `Device registry: ${registry.gates.length} gate(s), ${registry.reservoirs.length} reservoir(s), ${registry.signals.length} signal(s)` +
+      (deviceCount === 0 ? ' — add devices from the dashboard Wiring panel' : ''),
+  )
+
+  const engine = new Engine(config, api, events, annunciators, registry)
   engine.start()
 
   // Colony telemetry from the Data Console mod (optional; graceful when absent).
@@ -70,7 +81,7 @@ async function main(): Promise<void> {
     console.log(`Colony feed → ${dc.url ?? DEFAULT_DATA_CONSOLE_URL} (optional; fine if the mod isn't installed)`)
   }
 
-  const server = await buildServer(engine, colonyFeed)
+  const server = await buildServer(engine, colonyFeed, devicesPath)
   await server.listen({ port: config.gateway.port, host: '127.0.0.1' })
   console.log(`Gateway listening on http://127.0.0.1:${config.gateway.port} (REST + /ws)`)
 

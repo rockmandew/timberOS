@@ -3,6 +3,7 @@ dist/
 *.log
 .env
 config/timberos.json
+config/devices.json
 data/
 *.sqlite
 *.sqlite-journal

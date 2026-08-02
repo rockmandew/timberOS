@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CommandResult, EventRecord, Snapshot, TrendSeries } from './types'
+import type { CommandResult, DeviceRegistry, Discovery, EventRecord, Snapshot, TrendSeries } from './types'
 
 const TREND_WINDOW_MS = 1_800_000 // 30 minutes
 
@@ -11,10 +11,15 @@ interface TimberOSStore {
   gatewayOnline: boolean
   /** Transient result of the last command, for the toast strip. */
   lastCommand: CommandResult | null
+  /** Device registry + live discovery for the Wiring panel. */
+  devices: DeviceRegistry | null
+  discovery: Discovery | null
 
   connect(): void
   refreshEvents(): Promise<void>
   refreshTrends(): Promise<void>
+  fetchWiring(): Promise<void>
+  saveWiring(registry: DeviceRegistry): Promise<CommandResult>
   commandGate(gateId: string, position: number | 'OPEN' | 'CLOSED', confirm?: boolean): Promise<CommandResult>
   setMode(mode: string): Promise<CommandResult>
   setIntegration(id: string, enabled: boolean): Promise<CommandResult>
@@ -27,6 +32,8 @@ export const useTimberOS = create<TimberOSStore>((set, get) => ({
   trends: [],
   gatewayOnline: false,
   lastCommand: null,
+  devices: null,
+  discovery: null,
 
   connect() {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws'
@@ -66,6 +73,32 @@ export const useTimberOS = create<TimberOSStore>((set, get) => ({
     }
   },
 
+  async fetchWiring() {
+    try {
+      const [devRes, discRes] = await Promise.all([fetch('/api/devices'), fetch('/api/discovery')])
+      if (devRes.ok) set({ devices: (await devRes.json()) as DeviceRegistry })
+      if (discRes.ok) set({ discovery: (await discRes.json()) as Discovery })
+    } catch {
+      // Gateway offline — the Wiring panel shows its last-known state.
+    }
+  },
+
+  async saveWiring(registry) {
+    const res = await postJson<{ ok: boolean; registry?: DeviceRegistry; message?: string }>(
+      '/api/devices',
+      registry,
+      'PUT',
+    )
+    if (res.registry) set({ devices: res.registry })
+    const result: CommandResult = {
+      ok: res.ok,
+      status: res.ok ? 'accepted' : 'error',
+      message: res.ok ? 'Wiring saved' : (res.message ?? 'Failed to save wiring'),
+    }
+    set({ lastCommand: result })
+    return result
+  },
+
   async commandGate(gateId, position, confirm = false) {
     const result = await postJson<CommandResult>(`/api/gates/${encodeURIComponent(gateId)}/position`, {
       position,
@@ -97,10 +130,10 @@ export const useTimberOS = create<TimberOSStore>((set, get) => ({
   },
 }))
 
-async function postJson<T>(url: string, body: unknown): Promise<T> {
+async function postJson<T>(url: string, body: unknown, method: 'POST' | 'PUT' = 'POST'): Promise<T> {
   try {
     const res = await fetch(url, {
-      method: 'POST',
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })

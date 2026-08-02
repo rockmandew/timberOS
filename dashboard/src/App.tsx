@@ -14,6 +14,7 @@ import { TimberOSLogo } from './components/brand/TimberOSLogo'
 import { MotionProvider } from './components/motion/MotionProvider'
 import { SystemStatusBadge, type SystemStatus } from './components/status/SystemStatusBadge'
 import { ReservoirVisual } from './components/water/ReservoirVisual'
+import { WiringPanel } from './components/wiring/WiringPanel'
 import { useTimberOS } from './store'
 import type { BandSensor, Snapshot } from './types'
 
@@ -149,6 +150,28 @@ export function App() {
         <section className="panel">
           <h2>Event History</h2>
           <EventLog events={events} />
+        </section>
+
+        <section className="panel wiring-panel span-rows">
+          <h2>Wiring — Devices</h2>
+          <WiringPanel />
+        </section>
+
+        <section className="panel">
+          <h2>Signals</h2>
+          <div className="panel-body">
+            {snapshot?.signals && snapshot.signals.length > 0 ? (
+              snapshot.signals.map((s) => (
+                <div className="signal-row" key={s.id}>
+                  <span className={`sig-dot ${s.state ? 'on' : 'off'}`} aria-hidden="true" />
+                  <span className="sig-label">{s.label}</span>
+                  <span className="sig-state">{s.state ? 'ON' : 'OFF'}</span>
+                </div>
+              ))
+            ) : (
+              <div className="unmapped">No signals registered. Add HTTP Adapters in the Wiring panel.</div>
+            )}
+          </div>
         </section>
 
         <section className="panel">

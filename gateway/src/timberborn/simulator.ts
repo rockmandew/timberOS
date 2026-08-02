@@ -115,9 +115,18 @@ export class SimulatedTimberborn implements TimberbornApi {
   async setLever(name: string, state: boolean): Promise<void> {
     if (!this.levers.has(name)) throw new Error(`Unknown lever: ${name}`)
     this.levers.set(name, state)
+    this.remapGates()
+  }
 
-    // Mirror what the in-game wiring would do: the highest active position
-    // lever wins, and the STATE adapter follows a couple of seconds later.
+  async switchLever(name: string, state: boolean): Promise<void> {
+    // Tolerant: registers arbitrary (registry) lever names so listLevers reflects them.
+    this.levers.set(name, state)
+    this.remapGates()
+  }
+
+  // Mirror what the in-game wiring would do: the highest active position lever
+  // wins, and the STATE adapter follows a couple of seconds later.
+  private remapGates(): void {
     for (const gate of this.gates) {
       const positions = gate.positions ?? ['OPEN' as const]
       const active = positions.filter((pos) => this.levers.get(gateSignalName('CMD', gate.id, pos)))

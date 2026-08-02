@@ -228,6 +228,52 @@ export interface ColonyFeedState {
   message: string | null
 }
 
+/* --- Device registry (the Wiring panel) --- */
+
+export interface NamedSignal {
+  id: string
+  label: string
+  state: boolean
+  updatedAt: number
+}
+
+export interface GateDevice {
+  id: string
+  label: string
+  lever: string
+  method?: 'GET' | 'POST'
+  confirmRequired?: boolean
+}
+
+export interface SignalDevice {
+  id: string
+  label: string
+  adapter: string
+}
+
+export interface ReservoirThreshold {
+  adapter: string
+  value: number
+}
+
+export interface ReservoirDevice {
+  id: string
+  label: string
+  unit?: string
+  thresholds: ReservoirThreshold[]
+}
+
+export interface DeviceRegistry {
+  gates: GateDevice[]
+  signals: SignalDevice[]
+  reservoirs: ReservoirDevice[]
+}
+
+export interface Discovery {
+  adapters: Array<{ name: string; state: boolean }>
+  levers: Array<{ name: string; state: boolean }>
+}
+
 export interface Snapshot {
   connected: boolean
   simulated: boolean
@@ -236,6 +282,7 @@ export interface Snapshot {
   sensors: BandSensor[]
   gates: GateState[]
   alarms: Alarm[]
+  signals?: NamedSignal[]
   unmapped: RawSignal[]
   lint: LintFinding[]
   insights: RelationshipInsight[]

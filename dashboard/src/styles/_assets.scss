@@ -350,6 +350,110 @@ button.resource-more {
   &:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; border-radius: 3px; }
 }
 
+// ─────────────────────────── Wiring panel ───────────────────────────
+
+.wiring-panel { grid-column: span 2; }
+
+.wiring {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 640px;
+  overflow-y: auto;
+}
+
+.wiring-intro { margin: 0; color: var(--ink-secondary); font-size: 12px; }
+.wiring-intro strong { color: var(--ink); }
+
+.wiring-section { border-top: 1px solid var(--line); padding-top: 10px; }
+.wiring-h3 {
+  margin: 0 0 8px;
+  color: var(--brass);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.wiring-row,
+.wiring-threshold {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.wiring-reservoir {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.wiring input,
+.wiring select {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 6px;
+}
+.wiring input:focus-visible,
+.wiring select:focus-visible { outline: 2px solid var(--brass); outline-offset: 1px; }
+
+.wiring-nick { flex: 1; min-width: 120px; }
+.wiring-picker { flex: 1; min-width: 140px; }
+.wiring-unit { width: 60px; }
+.wiring-value { width: 72px; }
+.wiring-url { flex: 1; min-width: 180px; }
+.wiring-method { width: 70px; }
+.wiring-confirm { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-muted); font-size: 11px; }
+.wiring-gt { color: var(--ink-muted); font-size: 11px; }
+
+.wiring button {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--panel-raised);
+  color: var(--ink-secondary);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { border-color: var(--brass-dim); color: var(--ink); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+}
+
+.wiring-remove { color: var(--critical); padding: 2px 8px; }
+.wiring-add { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.wiring-or { color: var(--ink-muted); font-size: 11px; }
+
+.wiring-actions { display: flex; gap: 10px; align-items: center; border-top: 1px solid var(--line); padding-top: 10px; }
+.wiring-save {
+  background: #33270f;
+  border-color: var(--brass);
+  color: var(--brass);
+  font-weight: 700;
+}
+.wiring-reset { color: var(--ink-muted); }
+
+// Live registered-signal list
+.signal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.signal-row:last-child { border-bottom: none; }
+.sig-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-muted); flex: none; }
+.sig-dot.on { background: var(--good); }
+.sig-label { flex: 1; color: var(--ink); }
+.sig-state { color: var(--ink-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
+
 // ─────────────────────────── Keyframes ───────────────────────────
 
 @keyframes tos-spin { to { transform: rotate(360deg); } }
